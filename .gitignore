@@ -25,3 +25,12 @@ Thumbs.db
 # App secrets 
 secrets.toml
 .streamlit/secrets.toml
+
+# Model checkpoints - too large for GitHub
+models/*.pkl
+models/*.npz
+models/*.npz
+
+# Keep the folder
+!models/.gitkeep
+!models/README.md
