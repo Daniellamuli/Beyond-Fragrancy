@@ -1,11 +1,17 @@
-# Beyond Fragrancy
-### *say less. we know your scent.*
+<div align="center">
+  <!-- Brand Logo - 16:9 ratio (width: 640px, height: 360px) -->
+  <img src="app/assets/images/brand_logo_slogan.png" alt="Beyond Fragrancy Logo" width="640" height="360" style="object-fit: cover;"/>
+  
+  <!-- Hero image as separator -->
+  <br/>
+  <img src="app/assets/images/hero.jpg" alt="Luxury fragrance" width="800" style="border-radius: 12px;"/>
+</div>
 
 ---
 
 ## The Idea
 
-You know that feeling when someone walks past you and the whole room shifts? That's a perfume doing its job. But finding *your* version of that moment has always been weirdly hard. You either rely on a sales associate who's pushing whatever's on commission, spend money on something that smells completely different on your skin than it did on the tester strip, or just keep repurchasing the one safe option you found years ago because you don't know where to start with anything else.
+You know that feeling when someone walks past you and the whole room shifts? That is a perfume doing its job. But finding *your* version of that moment has always been weirdly hard. You either rely on a sales associate pushing whatever is on commission, spend money on something that smells completely different on your skin than it did on the tester strip, or just keep repurchasing the one safe option you found years ago because you do not know where to start.
 
 Beyond Fragrancy exists to fix that. Notes? Budget? Vibe? Say less.
 
@@ -45,15 +51,19 @@ At its core, Beyond Fragrancy is a scent recommendation engine with three layers
 
 **Buy links that make sense for where you are.** If you are in Nairobi, we tell you which local stockists carry it and link you to online retailers that actually ship to you. If you are in London or New York, you get the right international options with affiliate links so you can purchase directly.
 
+**Dupe engine.** Cannot afford the original? We find you budget alternatives that share 80-99% of the scent DNA. Smell rich, not broke.
+
 ---
 
 ## Business Understanding
 
 This project sits at the intersection of machine learning, fragrance culture, and a gap in the African retail market that nobody has seriously addressed yet.
 
-The recommendation engine uses content based filtering at its foundation, measuring cosine similarity between perfume note vectors to find scents with the closest DNA to what a user already loves. Over time, as users interact with the app and leave feedback, a collaborative filtering layer kicks in and the model gets sharper. The more people use it, the better it gets for everyone.
+The recommendation engine uses a hybrid content-based filtering approach at its foundation. Three separate TF-IDF vectorizers capture different aspects of a perfume's identity: one for raw ingredient notes, one for weighted accord profiles, and one for contextual signals like gender and season. These are combined into a single weighted matrix at 60% notes, 30% accords, and 10% context. Cosine similarity then measures how closely any two perfumes match in this multi-dimensional scent space.
 
-On the business side, the revenue model is affiliate commissions. Every time a user clicks through to purchase a perfume via a partner retailer, Beyond Fragrancy earns a percentage. The primary affiliate partners are Notino (which ships to Kenya and much of Africa), FragranceNet (global discount shipping), and Sephora via Impact.com for the international market. For Kenyan users specifically, Jumia Kenya is included as a local e-commerce option, and the app will surface physical store locations for retailers like Essenza, Rayan Perfumes, Carrefour, and Naivas where relevant stock is known.
+The system layers five additional signals on top of similarity: a Bayesian popularity score that weights ratings by vote confidence, a perfumer affinity boost for fragrances by the same nose, a collaborative filtering proxy using Fragrantica's pre-computed similar perfume lists, olfactive family diversity enforcement, and smart flanker deduplication so the same fragrance does not appear in multiple versions.
+
+On the business side, the revenue model is affiliate commissions. Every time a user clicks through to purchase a perfume via a partner retailer, Beyond Fragrancy earns a percentage. The primary affiliate partners are Notino (which ships to Kenya and much of Africa), FragranceNet (global discount shipping), and Sephora via Impact.com for the international market. For Kenyan users specifically, Jumia Kenya is included as a local e-commerce option, and the app surfaces physical store locations for retailers like Essenza, Rayan Perfumes, Carrefour, and Naivas where relevant stock is known.
 
 The Kenyan and broader East African angle is not an afterthought. It is a deliberate strategic focus. No perfume discovery app currently exists that is built around local availability, warm climate performance preferences, or African price sensitivities. That is the gap we are walking into.
 
@@ -61,52 +71,132 @@ The Kenyan and broader East African angle is not an afterthought. It is a delibe
 
 ## Data Sources
 
-We did the sniffing so you don't have to. Beyond Fragrancy is built 
-on a master dataset of 150,288 unique perfumes assembled from three 
-public Kaggle datasets and enriched through our own data pipeline.
+We did the sniffing so you don't have to. Beyond Fragrancy is built on a master dataset of 150,288 unique perfumes assembled from three public Kaggle datasets and enriched through our own data pipeline. The primary dataset was scraped from Fragrantica as of June 2026, making this one of the most current publicly available perfume datasets in existence, including 2025 and 2026 releases.
 
 ### Primary Dataset
 **Fragrantica.com Fragrance Dataset** by olgagmiufana1
 https://www.kaggle.com/datasets/olgagmiufana1/fragrantica-com-fragrance-dataset
 
-131,930 perfumes scraped from Fragrantica as of June 2026, making it 
-one of the most current publicly available perfume datasets in existence. 
-Each record includes name, brand, launch year, gender classification, 
-top/middle/base notes, scent accords, ratings, longevity, sillage, 
-price perception votes, seasonal suitability, and perfumer credits.
+131,930 perfumes with name, brand, launch year, gender, top/middle/base notes, scent accords, ratings, longevity, sillage, price perception votes, seasonal suitability, perfumer credits, and cover image URLs.
 
 ### Reference Tables
 **FragDB Fragrance Database** by eriklindqvist
 https://www.kaggle.com/datasets/eriklindqvist/fragdb-fragrance-database
 
-Four structured lookup tables covering notes, accords, brands, and 
-perfumers. Critical for standardizing note names across sources — 
-solving the problem of "Bergamotte" and "Bergamot" being the same 
-ingredient stored differently.
+Four structured lookup tables covering notes, accords, brands, and perfumers. Critical for standardising note names across sources and solving the problem of variant spellings like "Bergamotte" and "Bergamot" being treated as different ingredients.
 
 ### Supplementary Dataset
 **Fragrantica Perfumes** by ledecanteur
 https://www.kaggle.com/datasets/ledecanteur/fragrantica-perfumes
 
-70,100 additional perfume records with strong accord tagging. After 
-deduplication against the primary dataset, this contributed 18,358 
-genuinely new entries and filled 371 empty fields in existing records.
+70,100 additional perfume records with strong accord tagging. After deduplication against the primary dataset, this contributed 18,358 genuinely new entries and filled empty fields in existing records.
 
 ### The Master Dataset
-All three sources are merged into a single master_dataset.csv through 
-our data pipeline (see notebooks/). The result after deduplication, 
-enrichment, and validation:
 
-- 150,288 unique perfumes
+All three sources are merged into a single master_dataset.csv through our data pipeline. The result after deduplication, enrichment, and validation:
+
+- 150,288 unique perfumes across 4 sources
 - 141,975 with full notes data
-- 147,108 with accord classifications  
-- 11,857 flanker relationships mapped
-- 9 derived features including olfactive family, occasion tags, 
-  confidence scoring, and popularity weighting
+- 147,108 with accord classifications
+- 11,857 flanker relationships mapped across fragrance families
+- 7,366 dupe relationships identified between budget and luxury perfumes
+- 49,923 perfumer credits linked
+- 43,293 similar perfume relationships from Fragrantica community data
+- 9 derived features including olfactive family, occasion tags, confidence scoring, and popularity weighting
 - 95.51% average data completeness
 
-To reproduce the master dataset, download the three Kaggle datasets 
-above, place them in the data/ folder, and run the data pipeline notebook.
+To reproduce the master dataset, download the three Kaggle datasets above, place them in the data/ folder, and run the data pipeline notebook.
+
+---
+
+## Data Pipeline
+
+The pipeline handles several non-trivial cleaning challenges:
+
+**Encoding repair.** Perfume names from French, Portuguese, Arabic, and German sources contained corrupted characters from latin-1/utf-8 mismatches. A layered encoding fix resolves these before any other processing.
+
+**Note standardisation.** 23,000+ unique note terms were extracted from the dataset. A frequency-based autocorrection system detected rare terms that were likely misspellings of common ones and mapped them to canonical forms, eliminating 830 variant terms. A protected terms list prevents false corrections between distinct ingredients that share string similarity.
+
+**Accord parsing.** The accords column stored data as accord_name:percentage pairs. We parsed these properly, extracting both clean accord names for TF-IDF and strength scores for weighted feature engineering. This eliminated artefacts that were being generated by naive string processing.
+
+**Flanker detection.** An algorithm strips concentration markers and variant suffixes from perfume names, then uses fuzzy matching within brand groups to identify which perfumes are variations of a common original. 11,857 flanker relationships were detected, grouping perfumes into families for better recommendation deduplication.
+
+---
+
+## Model Architecture
+
+```
+User Input
+  [perfume names they love] or [notes description]
+         |
+Query Vector Construction
+  Seed perfume TF-IDF vectors averaged
+  + 20% soft signal from similar_perfumes (collaborative proxy)
+         |
+Cosine Similarity Search
+  Against 150,288 perfume vectors
+         |
+Filter Layer
+  Budget tier, gender, occasion, season
+         |
+Scoring
+  60% TF-IDF similarity
+  + 40% Bayesian popularity score
+  + perfumer affinity boost
+         |
+Post-processing
+  Flanker deduplication
+  Olfactive family diversity enforcement
+  Multi-level tie-breaking by rating
+         |
+Results
+  Top N recommendations with buy links
+```
+
+---
+
+## Key Results
+
+Sanity check similarity scores after model tuning:
+
+| Pair | Similarity | Expected |
+|------|-----------|---------|
+| Aventus vs Al Dur Al Maknoon Silver (known dupe) | 0.4179 | High |
+| Aventus vs Aventus for Her (flanker) | 0.3245 | High |
+| Aventus vs Amarige (different family) | 0.1004 | Low |
+| Aventus vs Angel (different family) | 0.1109 | Low |
+
+Recommendation test results:
+
+- Aventus input correctly returns Club de Nuit Intense Man by Armaf as top result (the most widely recognised Aventus clone globally)
+- Baccarat Rouge 540 dupe search correctly returns Club de Nuit Untold by Armaf and Amber Rouge by Orientica as top results (both well known in the fragrance community as BR540 alternatives)
+- Vanilla oud amber budget query correctly surfaces Arabic budget houses Rasasi, Afnan, and Al Haramain
+
+---
+
+## Repository Structure
+
+```
+Beyond-Fragrancy/
+  data/
+    README.md              # Download instructions for datasets
+    .gitkeep
+  notebooks/
+    beyond_fragrancy_data_pipeline.ipynb    # Data collection and merging
+    beyond_fragrancy_recommender.ipynb      # Recommendation engine
+    beyond_fragrancy_eda.ipynb              # Exploratory data analysis
+  models/
+    README.md              # Instructions to regenerate model files
+    .gitkeep
+  app/
+    app.py                 # Streamlit application (in progress)
+    assets/
+      images/              # Brand imagery
+      css/
+        style.css          # Custom brand styling
+  README.md
+  .gitignore
+```
 
 ---
 
