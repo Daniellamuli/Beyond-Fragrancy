@@ -1,22 +1,144 @@
+/* Beyond Fragrancy — Brand Stylesheet */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display+SC:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
 
+/* ── Root variables ── */
 :root {
-  --black:      #0A0A0A;
-  --gold:       #C9A84C;
-  --ivory:      #F5F0E8;
-  --rose:       #8B3A52;
-  --sage:       #7A8C7E;
-  --surface:    #111111;
-  --border:     #2a2a2a;
+    --black:   #0A0A0A;
+    --gold:    #C9A84C;
+    --ivory:   #F5F0E8;
+    --rose:    #8B3A52;
+    --sage:    #7A8C7E;
+    --surface: #111111;
+    --border:  #2a2a2a;
 }
 
-body {
-  background-color: var(--black);
-  color: var(--ivory);
-  font-family: 'DM Sans', sans-serif;
+/* ── Global ── */
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--black);
+    color: var(--ivory);
 }
 
+/* ── Hide Streamlit default elements ── */
+#MainMenu, footer, header { visibility: hidden; }
+.stDeployButton { display: none; }
+
+/* ── Main container ── */
+.main .block-container {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+    max-width: 960px;
+}
+
+/* ── Headings ── */
 h1, h2, h3 {
-  font-family: 'Playfair Display SC', serif;
-  color: var(--gold);
+    font-family: 'Playfair Display SC', serif;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+}
+
+/* ── Buttons ── */
+.stButton > button {
+    background-color: var(--gold);
+    color: var(--black);
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.6rem 2rem;
+    transition: opacity 0.2s;
+    font-weight: 500;
+}
+.stButton > button:hover {
+    opacity: 0.85;
+    border: none;
+}
+
+/* ── Text inputs ── */
+.stTextInput > div > div > input {
+    background-color: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--ivory);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+}
+.stTextInput > div > div > input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px #C9A84C44;
+}
+.stTextInput > div > div > input::placeholder {
+    color: #444;
+}
+
+/* ── Select boxes ── */
+.stSelectbox > div > div {
+    background-color: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--ivory);
+    border-radius: 6px;
+}
+
+/* ── Radio buttons ── */
+.stRadio > div {
+    display: flex;
+    gap: 1rem;
+}
+.stRadio label {
+    color: var(--ivory);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+}
+
+/* ── Expander ── */
+.streamlit-expanderHeader {
+    background-color: var(--surface);
+    color: var(--gold);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+}
+
+/* ── Slider ── */
+.stSlider > div > div > div > div {
+    background-color: var(--gold);
+}
+
+/* ── Spinner ── */
+.stSpinner > div {
+    border-top-color: var(--gold);
+}
+
+/* ── Sidebar ── */
+.css-1d391kg {
+    background-color: var(--surface);
+}
+
+/* ── Info/warning boxes ── */
+.stAlert {
+    background-color: var(--surface);
+    border: 0.5px solid var(--border);
+    color: var(--ivory);
+    border-radius: 6px;
+}
+
+/* ── Links ── */
+a {
+    color: var(--gold);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--ivory);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
 }
