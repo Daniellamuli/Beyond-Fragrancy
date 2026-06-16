@@ -1,13 +1,7 @@
-<div align="center">
-  <!-- Brand Logo - 16:9 ratio (width: 640px, height: 360px) -->
-  <img src="app/assets/images/brand_logo_slogan.png" alt="Beyond Fragrancy Logo" width="640" height="360" style="object-fit: cover;"/>
-  
-  <!-- Hero image as separator -->
-  <br/>
-  <img src="app/assets/images/hero.jpg" alt="Luxury fragrance" width="800" style="border-radius: 12px;"/>
-</div>
-
----
+<p align="center">
+  <img src="app/assets/images/brand_logo_slogan.png" alt="Beyond Fragrancy Logo" width="800" style="display: block; border-radius: 12px 12px 0 0;"/>
+  <img src="app/assets/images/hero.jpg" alt="Luxury fragrance" width="800" style="display: block; border-radius: 0 0 12px 12px;"/>
+</p>
 
 ## The Idea
 
