@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="app/assets/images/brand_logo_slogan.png" alt="Beyond Fragrancy Logo" width="800" style="display: block; border-radius: 12px 12px 0 0;"/>
-  <img src="app/assets/images/hero.jpg" alt="Luxury fragrance" width="800" style="display: block; border-radius: 0 0 12px 12px;"/>
+  <img src="app/assets/images/brand_logo_slogan.png" alt="Beyond Fragrancy Logo" style="width: 100%; max-width: 600px; display: block; border-radius: 12px 12px 0 0;"/>
+  <img src="app/assets/images/hero.jpg" alt="Luxury fragrance" style="width: 100%; max-width: 600px; display: block; border-radius: 0 0 12px 12px; max-height: 200px; object-fit: cover;"/>
 </p>
 
 ## The Idea
