@@ -1,1 +1,4 @@
+*.csv filter=lfs diff=lfs merge=lfs -text
+*.pkl filter=lfs diff=lfs merge=lfs -text
+*.npz filter=lfs diff=lfs merge=lfs -text
 models/df_app.csv filter=lfs diff=lfs merge=lfs -text
