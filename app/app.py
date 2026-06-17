@@ -741,6 +741,7 @@ def build_retailer_links(name, url, loc='KE'):
     
     return links
 
+# FIXED: render_card_html with proper match display and clickable links
 def render_card_html(row, loc='KE', show_match=True):
     name = str(row.get('name', ''))
     brand = str(row.get('brand', ''))
@@ -764,12 +765,7 @@ def render_card_html(row, loc='KE', show_match=True):
 
     img_tag = ''
     if img_url and str(img_url) not in ['nan','None','']:
-        img_tag = (
-            f'<img src="{img_url}" '
-            f'style="width:100%;height:140px;object-fit:contain;'
-            f'background:#161616;border-radius:8px;padding:8px;'
-            f'margin-bottom:0.7rem;" />'
-        )
+        img_tag = f'<img src="{img_url}" style="width:100%;height:140px;object-fit:contain;background:#161616;border-radius:8px;padding:8px;margin-bottom:0.7rem;" />'
 
     note_items = []
     for part in re.split(r'[|,]', notes_raw):
@@ -782,15 +778,9 @@ def render_card_html(row, loc='KE', show_match=True):
     pills_html = ''
     for note in note_items:
         emoji = get_note_emoji(note)
-        pills_html += (
-            f'<span style="display:inline-block;background:#1a1a1a;'
-            f'border:0.5px solid #2a2a2a;color:#666;border-radius:10px;'
-            f'padding:2px 8px;font-size:0.68rem;margin:2px 2px 2px 0;">'
-            f'{emoji} {note}</span>'
-        )
+        pills_html += f'<span style="display:inline-block;background:#1a1a1a;border:0.5px solid #2a2a2a;color:#666;border-radius:10px;padding:2px 8px;font-size:0.68rem;margin:2px 2px 2px 0;">{emoji} {note}</span>'
 
-    accord_items = [a.strip() for a in accords.split(',')
-                    if a.strip() and a.lower() not in ['nan','']][:4]
+    accord_items = [a.strip() for a in accords.split(',') if a.strip() and a.lower() not in ['nan','']][:4]
     accord_line = ' · '.join(accord_items)
 
     meta_parts = []
@@ -808,57 +798,19 @@ def render_card_html(row, loc='KE', show_match=True):
     dupe_html = ''
     dupe_str = str(dupe_of) if dupe_of else ''
     if dupe_str and dupe_str not in ['nan','None','']:
-        dupe_html = (
-            f'<div style="color:#8B3A52;font-size:0.72rem;'
-            f'margin:0.4rem 0;padding-top:0.4rem;'
-            f'border-top:0.5px solid #1e1e1e;">'
-            f'💡 Smells like {dupe_str}</div>'
-        )
+        dupe_html = f'<div style="color:#8B3A52;font-size:0.72rem;margin:0.4rem 0;padding-top:0.4rem;border-top:0.5px solid #1e1e1e;">💡 Smells like {dupe_str}</div>'
 
-    # Build retailer links - properly creating clickable links
     retailers = build_retailer_links(name, url, loc)
     links_html_parts = []
     for emoji, label, link_url, note in retailers:
-        links_html_parts.append(
-            f'<a href="{link_url}" target="_blank" '
-            f'style="display:inline-block;margin:3px 4px 3px 0;'
-            f'text-decoration:none;color:#C9A84C;font-size:0.72rem;'
-            f'border:0.5px solid #2a2a2a;border-radius:5px;'
-            f'padding:3px 8px;">'
-            f'{emoji} {label}</a>'
-        )
+        links_html_parts.append(f'<a href="{link_url}" target="_blank" style="display:inline-block;margin:3px 4px 3px 0;text-decoration:none;color:#C9A84C;font-size:0.72rem;border:0.5px solid #2a2a2a;border-radius:5px;padding:3px 8px;">{emoji} {label}</a>')
     links_html = ''.join(links_html_parts)
 
     match_html = ""
     if show_match:
-        match_html = f"""
-        <div style="text-align:right;flex-shrink:0;margin-left:0.6rem;">
-          <div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;white-space:nowrap;">{price_lbl}</div>
-          <div style="color:{match_clr};font-size:1.1rem;font-weight:700;margin-top:3px;">{match_pct}%</div>
-          <div style="color:#333;font-size:0.6rem;">match</div>
-        </div>
-        """
+        match_html = f'<div style="text-align:right;flex-shrink:0;margin-left:0.6rem;"><div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;white-space:nowrap;">{price_lbl}</div><div style="color:{match_clr};font-size:1.1rem;font-weight:700;margin-top:3px;">{match_pct}%</div><div style="color:#333;font-size:0.6rem;">match</div></div>'
 
-    # FIXED: Properly escape the brand name and ensure it's displayed correctly
-    card = f"""
-    <div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">
-      {img_tag}
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:'Playfair Display SC',serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div>
-          <div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div>
-        </div>
-        {match_html}
-      </div>
-      {f'<div style="color:#555;font-size:0.74rem;margin-bottom:0.4rem;">{accord_line}</div>' if accord_line else ''}
-      {f'<div style="margin-bottom:0.4rem;">{pills_html}</div>' if pills_html else ''}
-      {f'<div style="color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;">{meta_line}</div>' if meta_line else ''}
-      {dupe_html}
-      <div style="margin-top:auto;padding-top:0.6rem;border-top:0.5px solid #1a1a1a;">
-        {links_html}
-      </div>
-    </div>
-    """
+    card = f'<div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">{img_tag}<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;"><div style="flex:1;min-width:0;"><div style="font-family:Playfair Display SC,serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div><div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div></div>{match_html}</div>{f"<div style=\\"color:#555;font-size:0.74rem;margin-bottom:0.4rem;\\">{accord_line}</div>" if accord_line else ""}{f"<div style=\\"margin-bottom:0.4rem;\\">{pills_html}</div>" if pills_html else ""}{f"<div style=\\"color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;\\">{meta_line}</div>" if meta_line else ""}{dupe_html}<div style="margin-top:auto;padding-top:0.6rem;border-top:0.5px solid #1a1a1a;">{links_html}</div></div>'
     return card
 
 def render_header():
