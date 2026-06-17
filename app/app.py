@@ -59,7 +59,6 @@ NOTE_EMOJIS = {
 
 MIN_SIM = 0.20
 
-# Known dupe and flanker boosting scores
 DUPE_BOOSTS = {
     'Club de Nuit Untold': 0.92,
     'Amber Rouge': 0.88,
@@ -94,6 +93,34 @@ KNOWN_BRANDS = [
     'valentino', 'viktor rolf', 'prada', 'boss', 'zara',
 ]
 
+VIBE_CATEGORIES = {
+    "🔥 Warm & Sensual": {
+        "keywords": ["vanilla", "amber", "warm", "spicy", "musk", "oriental"],
+        "image": "scent_oriental.png",
+        "description": "Rich, seductive, and deeply inviting"
+    },
+    "🌊 Fresh & Clean": {
+        "keywords": ["bergamot", "citrus", "aquatic", "green", "fresh", "marine"],
+        "image": "scent_fresh.png",
+        "description": "Crisp, energetic, and effortlessly clean"
+    },
+    "🌹 Floral & Soft": {
+        "keywords": ["rose", "jasmine", "peony", "white floral", "floral", "powdery"],
+        "image": "scent_floral.png",
+        "description": "Delicate, feminine, and beautifully soft"
+    },
+    "🌲 Woody & Bold": {
+        "keywords": ["cedar", "sandalwood", "vetiver", "leather", "woody", "smoky"],
+        "image": "scent_oriental.png",
+        "description": "Strong, grounded, and confidently masculine"
+    },
+    "🍬 Sweet & Gourmand": {
+        "keywords": ["vanilla", "caramel", "honey", "chocolate", "sweet", "praline"],
+        "image": "scent_floral.png",
+        "description": "Delicious, comforting, and irresistibly sweet"
+    }
+}
+
 def get_note_emoji(note):
     nl = note.lower()
     for key, emoji in NOTE_EMOJIS.items():
@@ -114,6 +141,64 @@ def img_b64(filename):
 def inject_css():
     with open(os.path.join(BASE, 'assets', 'css', 'style.css'), 'r') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    
+    # Extra CSS for mobile button visibility and center tabs
+    st.markdown("""
+    <style>
+    /* Make search button always visible on mobile */
+    div[data-testid="stButton"] > button[kind="primary"] {
+        display: block !important;
+        width: 100% !important;
+        min-height: 50px !important;
+        font-size: 1rem !important;
+        margin-top: 0.5rem !important;
+        background-color: #C9A84C !important;
+        color: #0A0A0A !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+    }
+    @media (max-width: 768px) {
+        div[data-testid="stButton"] > button[kind="primary"] {
+            font-size: 1.1rem !important;
+            min-height: 56px !important;
+            padding: 0.8rem 1.5rem !important;
+            border-radius: 10px !important;
+        }
+    }
+    /* Center tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+    }
+    @media (max-width: 768px) {
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.3rem !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 0.3rem 0.8rem !important;
+            font-size: 0.75rem !important;
+        }
+    }
+    /* Category card hover */
+    .category-card {
+        background: #111;
+        border: 0.5px solid #2a2a2a;
+        border-radius: 12px;
+        padding: 0.8rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    .category-card:hover {
+        border-color: #C9A84C;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(201,168,76,0.1);
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 inject_css()
 
@@ -128,7 +213,6 @@ def load_models():
     data_dir = os.path.join(BASE, '..', 'data')
 
     with st.spinner("Loading Beyond Fragrancy..."):
-        # Load the master dataset from CSV
         df_path = os.path.join(models_dir, 'df_app.csv')
         if not os.path.exists(df_path):
             df_path = os.path.join(data_dir, 'master_dataset.csv')
@@ -140,7 +224,6 @@ def load_models():
         df = df.reset_index(drop=True)
         print(f"Loaded {len(df):,} perfumes from {df_path}")
         
-        # Load TF-IDF matrix
         tfidf_path = os.path.join(models_dir, 'tfidf_matrix_checkpoint.npz')
         tfidf = None
         if os.path.exists(tfidf_path):
@@ -150,7 +233,6 @@ def load_models():
             except Exception as e:
                 print(f"Could not load TF-IDF: {e}")
         
-        # Rebuild vectorizers from JSON
         def rebuild_vec(path):
             with open(path) as f:
                 d = json.load(f)
@@ -238,7 +320,6 @@ def build_brand_index():
                 BRAND_INDEX[brand_lower] = df[df['brand'].str.lower() == brand_lower]['name'].tolist()
 
 def get_flanker_suggestions(query, n=4):
-    """Fast version using pre-built brand index"""
     build_brand_index()
     last = query.split(',')[-1].strip()
     if len(last) < 3:
@@ -258,8 +339,7 @@ def get_flanker_suggestions(query, n=4):
             last, brand_perfumes, scorer=fuzz.partial_ratio, limit=n+5
         )
     else:
-        # Use top 5000 popular perfumes for speed
-        top_perfumes = df.nlargest(5000, 'popularity_score')['name'].tolist() if 'popularity_score' in df.columns else all_names[:5000]
+        top_perfumes = df.nlargest(3000, 'popularity_score')['name'].tolist() if 'popularity_score' in df.columns else all_names[:3000]
         matches = process.extract(
             last, top_perfumes, scorer=fuzz.partial_ratio, limit=n+5
         )
@@ -293,8 +373,93 @@ def get_perfume_image(name):
         return str(img)
     return None
 
-def recommend(perfume_names=None, notes_input=None,
-              n=12, dupes_only=False):
+@st.cache_data(show_spinner=False)
+def get_category_perfumes(category_keywords, limit=12):
+    keyword_pattern = '|'.join(category_keywords)
+    mask = df['all_notes'].str.lower().str.contains(keyword_pattern, na=False)
+    category_df = df[mask].copy()
+    if 'popularity_score' in category_df.columns:
+        category_df = category_df.sort_values('popularity_score', ascending=False)
+    return category_df.head(limit)
+
+def render_scent_explorer():
+    st.markdown("""
+    <div style="text-align:center;padding:0.5rem 0 0.2rem;">
+        <h2 style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:1.1rem;letter-spacing:0.15em;margin-bottom:0;">
+            Explore by Scent Family
+        </h2>
+        <p style="color:#555;font-size:0.8rem;">Find perfumes that match your vibe</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    categories = [
+        ("🔥 Warm & Sensual", "scent_oriental.png", VIBE_CATEGORIES["🔥 Warm & Sensual"]["description"]),
+        ("🌊 Fresh & Clean", "scent_fresh.png", VIBE_CATEGORIES["🌊 Fresh & Clean"]["description"]),
+        ("🌹 Floral & Soft", "scent_floral.png", VIBE_CATEGORIES["🌹 Floral & Soft"]["description"]),
+        ("🌲 Woody & Bold", "scent_oriental.png", VIBE_CATEGORIES["🌲 Woody & Bold"]["description"]),
+        ("🍬 Sweet & Gourmand", "scent_floral.png", VIBE_CATEGORIES["🍬 Sweet & Gourmand"]["description"])
+    ]
+    
+    cols = st.columns(5)
+    for i, (name, img, desc) in enumerate(categories):
+        with cols[i]:
+            img_b64_ = img_b64(img)
+            if img_b64_:
+                st.markdown(f"""
+                <div class="category-card">
+                    <img src="{img_b64_}" style="width:100%;border-radius:8px;max-height:70px;object-fit:cover;"/>
+                    <div style="color:#F5F0E8;font-size:0.7rem;font-weight:600;margin:0.3rem 0 0.1rem;font-family:'Playfair Display SC',serif;">{name}</div>
+                    <div style="color:#555;font-size:0.55rem;margin-bottom:0.2rem;">{desc[:25]}...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button(f"Explore {name.split()[1]}", key=f"cat_{i}", use_container_width=True):
+                    st.session_state['selected_category'] = name
+                    st.rerun()
+
+def render_category_page(category_name):
+    category_data = VIBE_CATEGORIES.get(category_name)
+    if not category_data:
+        return
+    
+    st.markdown(f"""
+    <div style="text-align:center;padding:0.5rem 0 0.5rem;">
+        <h2 style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:1.3rem;letter-spacing:0.1em;">
+            {category_name}
+        </h2>
+        <p style="color:#555;font-size:0.85rem;">{category_data['description']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    img_b64_ = img_b64(category_data['image'])
+    if img_b64_:
+        st.image(img_b64_, use_column_width=True)
+    
+    with st.spinner("Finding perfumes in this category..."):
+        category_perfumes = get_category_perfumes(category_data['keywords'], limit=12)
+    
+    if len(category_perfumes) == 0:
+        st.info("No perfumes found in this category yet.")
+        return
+    
+    st.markdown(f"""
+    <div style="margin:0.5rem 0 0.3rem;padding-bottom:0.3rem;border-bottom:0.5px solid #1e1e1e;">
+        <span style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:0.7rem;letter-spacing:0.15em;">
+            {len(category_perfumes)} PERFUMES IN THIS FAMILY
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    cols = st.columns(3)
+    for idx, (_, row) in enumerate(category_perfumes.iterrows()):
+        with cols[idx % 3]:
+            st.markdown(render_card_html(row, 'KE'), unsafe_allow_html=True)
+    
+    if st.button("← Back to All Categories", use_container_width=True):
+        st.session_state['selected_category'] = None
+        st.rerun()
+
+def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
     if not perfume_names and not notes_input:
         return None, []
 
@@ -339,7 +504,6 @@ def recommend(perfume_names=None, notes_input=None,
     res = df.copy()
     res['_sim'] = sims
 
-    # Dupe and flanker boosting
     for name, boost_score in DUPE_BOOSTS.items():
         mask = res['name'].str.lower() == name.lower()
         if mask.any():
@@ -625,15 +789,26 @@ def main():
     render_header()
     loc, n_res = render_sidebar()
 
+    # Check if we're in a category page
+    if 'selected_category' in st.session_state and st.session_state['selected_category']:
+        render_category_page(st.session_state['selected_category'])
+        return
+
+    # Main page
     st.markdown("""
-    <div style="text-align:center;padding:1.2rem 1rem 0.3rem;
+    <div style="text-align:center;padding:0.5rem 1rem 0.1rem;
                 max-width:600px;margin:0 auto;">
-      <p style="color:#555;font-size:0.88rem;line-height:1.75;">
+      <p style="color:#555;font-size:0.85rem;line-height:1.75;">
         Tell us a perfume you love, describe notes you are drawn to,
         or find an affordable dupe of your dream scent.
       </p>
     </div>
     """, unsafe_allow_html=True)
+
+    # Render Scent Explorer
+    render_scent_explorer()
+
+    st.markdown("<div style='height:0.5rem;'></div>", unsafe_allow_html=True)
 
     _, c2, _ = st.columns([0.2, 5, 0.2])
     with c2:
@@ -681,27 +856,6 @@ def main():
                                          for p in raw.split(',')]
                                 parts[-1] = sug
                                 raw = ', '.join(parts)
-
-            # Quick vibe buttons (replaces POPULAR chips)
-            st.markdown(
-                "<p style='color:#222;font-size:0.7rem;"
-                "letter-spacing:0.1em;margin:0.7rem 0 0.3rem;'>"
-                "QUICK VIBES</p>",
-                unsafe_allow_html=True
-            )
-            vibes = ["🔥 Warm & Sensual", "🌊 Fresh & Clean", "🌹 Floral & Soft", "🌲 Woody & Bold", "🍬 Sweet & Gourmand"]
-            vibe_cols = st.columns(5)
-            vibe_queries = {
-                "🔥 Warm & Sensual": "vanilla amber warm spicy musk",
-                "🌊 Fresh & Clean": "bergamot citrus aquatic fresh green",
-                "🌹 Floral & Soft": "rose jasmine peony white floral powdery",
-                "🌲 Woody & Bold": "cedar sandalwood vetiver leather smoky",
-                "🍬 Sweet & Gourmand": "vanilla caramel honey chocolate praline"
-            }
-            for i, vibe in enumerate(vibes):
-                with vibe_cols[i]:
-                    if st.button(vibe, key=f"vibe_{i}", use_container_width=True):
-                        raw = vibe_queries[vibe]
 
             if raw and raw.strip():
                 perfume_names = [
