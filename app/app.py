@@ -810,7 +810,40 @@ def render_card_html(row, loc='KE', show_match=True):
     if show_match:
         match_html = f'<div style="text-align:right;flex-shrink:0;margin-left:0.6rem;"><div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;white-space:nowrap;">{price_lbl}</div><div style="color:{match_clr};font-size:1.1rem;font-weight:700;margin-top:3px;">{match_pct}%</div><div style="color:#333;font-size:0.6rem;">match</div></div>'
 
-    card = f'<div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">{img_tag}<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;"><div style="flex:1;min-width:0;"><div style="font-family:Playfair Display SC,serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div><div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div></div>{match_html}</div>{f"<div style=\\"color:#555;font-size:0.74rem;margin-bottom:0.4rem;\\">{accord_line}</div>" if accord_line else ""}{f"<div style=\\"margin-bottom:0.4rem;\\">{pills_html}</div>" if pills_html else ""}{f"<div style=\\"color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;\\">{meta_line}</div>" if meta_line else ""}{dupe_html}<div style="margin-top:auto;padding-top:0.6rem;border-top:0.5px solid #1a1a1a;">{links_html}</div></div>'
+    # Build accordion line
+    accord_div = ''
+    if accord_line:
+        accord_div = f'<div style="color:#555;font-size:0.74rem;margin-bottom:0.4rem;">{accord_line}</div>'
+    
+    # Build pills div
+    pills_div = ''
+    if pills_html:
+        pills_div = f'<div style="margin-bottom:0.4rem;">{pills_html}</div>'
+    
+    # Build meta div
+    meta_div = ''
+    if meta_line:
+        meta_div = f'<div style="color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;">{meta_line}</div>'
+
+    card = f'''
+    <div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">
+      {img_tag}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:Playfair Display SC,serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div>
+          <div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div>
+        </div>
+        {match_html}
+      </div>
+      {accord_div}
+      {pills_div}
+      {meta_div}
+      {dupe_html}
+      <div style="margin-top:auto;padding-top:0.6rem;border-top:0.5px solid #1a1a1a;">
+        {links_html}
+      </div>
+    </div>
+    '''
     return card
 
 def render_header():
