@@ -71,7 +71,7 @@ DUPE_BOOSTS = {
     'Lattafa Al Dur Al Maknoon': 0.82,
     'Al Haramain Amber Oud': 0.80,
     'Rasasi Al Wisam': 0.78,
-    'Lattafa Qaa\'ed': 0.76,
+    "Lattafa Qaa'ed": 0.76,
     'Haan Amber': 0.75,
     'Ruby Whispers': 0.72,
     'Aquila': 0.70,
@@ -84,39 +84,50 @@ DUPE_BOOSTS = {
 }
 
 KNOWN_BRANDS = [
-    'gucci', 'dior', 'chanel', 'armani', 'tom ford', 'ysl', 
-    'mugler', 'versace', 'paco rabanne', 'calvin klein', 
+    'gucci', 'dior', 'chanel', 'armani', 'tom ford', 'ysl',
+    'mugler', 'versace', 'paco rabanne', 'calvin klein',
     'hermes', 'jean paul gaultier', 'baccarat', 'creed',
     'kilian', 'mancera', 'montale', 'nishane', 'parfums de marly',
     'lattafa', 'armaf', 'afnan', 'al haramain', 'rasasi',
     'burberry', 'carolina herrera', 'givenchy', 'guerlain',
     'valentino', 'viktor rolf', 'prada', 'boss', 'zara',
-    'kayali', 'hugo boss', 'ysl', 'lancome', 'estee lauder',
+    'kayali', 'hugo boss', 'lancome', 'estee lauder',
 ]
 
 VIBE_CATEGORIES = {
     "🍬 Sweet & Gourmand": {
-        "keywords": ["vanilla", "caramel", "honey", "chocolate", "praline", "toffee", "marshmallow", "sugar", "whiskey", "rum", "malt", "coffee", "cacao", "candy", "gourmand", "brown sugar", "syrup", "butter", "cream"],
+        "keywords": ["vanilla", "caramel", "honey", "chocolate", "praline",
+                     "toffee", "marshmallow", "sugar", "whiskey", "rum",
+                     "malt", "coffee", "cacao", "candy", "gourmand",
+                     "brown sugar", "syrup", "butter", "cream"],
         "image": "scent_gourmand.png",
         "description": "Delicious, comforting, and irresistibly sweet"
     },
     "🔥 Warm & Sensual": {
-        "keywords": ["amber", "musk", "incense", "cardamom", "cinnamon", "clove", "saffron", "oud", "labdanum", "styrax", "resin", "balsamic", "opoponax"],
+        "keywords": ["amber", "musk", "incense", "cardamom", "cinnamon",
+                     "clove", "saffron", "oud", "labdanum", "styrax",
+                     "resin", "balsamic", "opoponax"],
         "image": "scent_oriental.png",
         "description": "Rich, seductive, and deeply inviting"
     },
     "🌲 Woody & Bold": {
-        "keywords": ["cedar", "sandalwood", "vetiver", "oakmoss", "pine", "mahogany", "guaiac", "cypress", "teak", "ebony", "earthy", "smoky"],
+        "keywords": ["cedar", "sandalwood", "vetiver", "oakmoss", "pine",
+                     "mahogany", "guaiac", "cypress", "teak", "ebony",
+                     "earthy", "smoky"],
         "image": "scent_woody.png",
         "description": "Strong, grounded, and confidently masculine"
     },
     "🌹 Floral & Soft": {
-        "keywords": ["rose", "jasmine", "peony", "tuberose", "magnolia", "lily", "violet", "freesia", "gardenia", "ylang-ylang", "mimosa", "orange blossom", "neroli", "heliotrope"],
+        "keywords": ["rose", "jasmine", "peony", "tuberose", "magnolia",
+                     "lily", "violet", "freesia", "gardenia", "ylang-ylang",
+                     "mimosa", "orange blossom", "neroli", "heliotrope"],
         "image": "scent_floral.png",
         "description": "Delicate, feminine, and beautifully soft"
     },
     "🌊 Fresh & Clean": {
-        "keywords": ["bergamot", "lemon", "lime", "grapefruit", "aquatic", "marine", "mint", "basil", "neroli", "citron", "ozonic", "aldehydic", "green"],
+        "keywords": ["bergamot", "lemon", "lime", "grapefruit", "aquatic",
+                     "marine", "mint", "basil", "neroli", "citron",
+                     "ozonic", "aldehydic", "green"],
         "image": "scent_fresh.png",
         "description": "Crisp, energetic, and effortlessly clean"
     }
@@ -130,19 +141,21 @@ def get_note_emoji(note):
     return '·'
 
 def img_b64(filename):
-    for ext in ['png','jpg','jfif','jpeg']:
+    for ext in ['png', 'jpg', 'jfif', 'jpeg']:
         base = filename.rsplit('.', 1)[0] if '.' in filename else filename
         path = os.path.join(IMGS, f"{base}.{ext}")
         if os.path.exists(path):
-            mime = 'jpeg' if ext in ['jpg','jfif','jpeg'] else 'png'
+            mime = 'jpeg' if ext in ['jpg', 'jfif', 'jpeg'] else 'png'
             with open(path, 'rb') as f:
                 return f"data:image/{mime};base64,{base64.b64encode(f.read()).decode()}"
     return None
 
 def inject_css():
-    with open(os.path.join(BASE, 'assets', 'css', 'style.css'), 'r') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    
+    css_path = os.path.join(BASE, 'assets', 'css', 'style.css')
+    if os.path.exists(css_path):
+        with open(css_path, 'r') as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
     st.markdown("""
     <style>
     div[data-testid="stButton"] > button[kind="primary"] {
@@ -160,8 +173,6 @@ def inject_css():
         div[data-testid="stButton"] > button[kind="primary"] {
             font-size: 1.1rem !important;
             min-height: 56px !important;
-            padding: 0.8rem 1.5rem !important;
-            border-radius: 10px !important;
         }
     }
     .stTabs [data-baseweb="tab-list"] {
@@ -169,15 +180,6 @@ def inject_css():
         justify-content: center !important;
         gap: 0.5rem !important;
         flex-wrap: wrap !important;
-    }
-    @media (max-width: 768px) {
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 0.3rem !important;
-        }
-        .stTabs [data-baseweb="tab"] {
-            padding: 0.3rem 0.8rem !important;
-            font-size: 0.75rem !important;
-        }
     }
     .category-card {
         background: #111;
@@ -194,13 +196,6 @@ def inject_css():
         transform: translateY(-3px);
         box-shadow: 0 4px 20px rgba(201,168,76,0.1);
     }
-    .category-hero {
-        max-height: 120px !important;
-        width: 100% !important;
-        object-fit: cover !important;
-        border-radius: 12px !important;
-    }
-    /* Suggestion with image styling */
     .suggestion-container {
         display: flex;
         flex-direction: column;
@@ -209,7 +204,6 @@ def inject_css():
         border: 0.5px solid #2a2a2a;
         border-radius: 10px;
         padding: 0.5rem;
-        cursor: pointer;
         transition: all 0.3s ease;
         height: 100%;
         min-height: 100px;
@@ -217,7 +211,6 @@ def inject_css():
     .suggestion-container:hover {
         border-color: #C9A84C;
         transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(201,168,76,0.1);
     }
     .suggestion-image {
         width: 60px;
@@ -233,7 +226,6 @@ def inject_css():
         text-align: center;
         margin-top: 0.3rem;
         line-height: 1.2;
-        max-height: 2.4rem;
         overflow: hidden;
         font-family: 'DM Sans', sans-serif;
     }
@@ -250,105 +242,85 @@ inject_css()
 
 @st.cache_resource(show_spinner="Loading Beyond Fragrancy...")
 def load_models():
-    import numpy as np
-    
     if not hasattr(np, '_core'):
         np._core = np.core
-    
-    models_dir = MODS
 
-    with st.spinner("Loading Beyond Fragrancy..."):
-        df_path = os.path.join(models_dir, 'df_app.csv')
-        
-        if not os.path.exists(df_path):
-            raise FileNotFoundError(f"Data file not found at {df_path}")
-        
-        # Load essential columns only
-        essential_columns = [
-            'name', 'brand', 'price_tier', 'all_notes', 'accords', 
-            'rating_avg', 'rating_count', 'popularity_score', 'image_url', 
-            'url', 'gender', 'olfactive_family', 'best_season', 
-            'flanker_group', 'flanker_type', 'is_flanker', 'dupe_of',
-            'perfumers', 'similar_perfumes', 'feature_string'
-        ]
-        
-        try:
-            df = pd.read_csv(df_path, low_memory=False, usecols=essential_columns)
-        except ValueError:
-            df = pd.read_csv(df_path, low_memory=False)
-        
-        df = df.reset_index(drop=True)
-        print(f"Loaded {len(df):,} perfumes")
-        
-        # Memory optimization - convert to category
-        for col in ['brand', 'gender', 'price_tier', 'olfactive_family', 'best_season']:
-            if col in df.columns:
-                df[col] = df[col].astype('category')
-        
-        # Load TF-IDF matrix
-        tfidf_path = os.path.join(models_dir, 'tfidf_matrix_checkpoint.npz')
-        tfidf = None
-        if os.path.exists(tfidf_path):
-            try:
-                tfidf = sp.load_npz(tfidf_path)
-                print(f"Loaded TF-IDF matrix: {tfidf.shape}")
-            except Exception as e:
-                print(f"Could not load TF-IDF: {e}")
-        
-        # Rebuild vectorizers from JSON
-        def rebuild_vec(path):
-            with open(path) as f:
-                d = json.load(f)
-            p = d['params']
-            vec = TfidfVectorizer(
-                max_features=p['max_features'],
-                ngram_range=tuple(p['ngram_range']),
-                min_df=p['min_df'], 
-                max_df=p['max_df'],
-                sublinear_tf=p['sublinear_tf']
-            )
-            vec.vocabulary_ = d['vocabulary']
-            vec.idf_ = np.array(d['idf'])
-            vec._tfidf._idf_diag = sp.diags(
-                vec.idf_, offsets=0,
-                shape=(len(vec.idf_), len(vec.idf_)),
-                format='csr', dtype=np.float64
-            )
-            return vec
+    df_path = os.path.join(MODS, 'df_app.csv')
+    if not os.path.exists(df_path):
+        raise FileNotFoundError(f"Data file not found at {df_path}")
 
-        nv = rebuild_vec(os.path.join(models_dir, 'notes_vocab.json'))
-        av = rebuild_vec(os.path.join(models_dir, 'accords_vocab.json'))
-        cv = rebuild_vec(os.path.join(models_dir, 'context_vocab.json'))
+    essential_columns = [
+        'name', 'brand', 'price_tier', 'all_notes', 'accords',
+        'rating_avg', 'rating_count', 'popularity_score', 'image_url',
+        'url', 'gender', 'olfactive_family', 'best_season',
+        'flanker_group', 'flanker_type', 'is_flanker', 'dupe_of',
+        'perfumers', 'similar_perfumes', 'feature_string'
+    ]
+    try:
+        df = pd.read_csv(df_path, low_memory=False, usecols=essential_columns)
+    except ValueError:
+        df = pd.read_csv(df_path, low_memory=False)
+    df = df.reset_index(drop=True)
 
-        df['brand'] = df['brand'].apply(
-            lambda b: BRAND_FIX.get(str(b).strip(), str(b).strip())
+    for col in ['brand', 'gender', 'price_tier', 'olfactive_family', 'best_season']:
+        if col in df.columns:
+            df[col] = df[col].astype('category')
+
+    tfidf_path = os.path.join(MODS, 'tfidf_matrix_checkpoint.npz')
+    tfidf = sp.load_npz(tfidf_path) if os.path.exists(tfidf_path) else None
+
+    def rebuild_vec(path):
+        with open(path) as f:
+            d = json.load(f)
+        p   = d['params']
+        vec = TfidfVectorizer(
+            max_features=p['max_features'],
+            ngram_range=tuple(p['ngram_range']),
+            min_df=p['min_df'],
+            max_df=p['max_df'],
+            sublinear_tf=p['sublinear_tf']
         )
-        if 'best_season' in df.columns:
-            df['weather_label'] = df['best_season'].map(SEASON_MAP).fillna('')
-        else:
-            df['weather_label'] = ''
+        vec.vocabulary_ = d['vocabulary']
+        vec.idf_         = np.array(d['idf'])
+        vec._tfidf._idf_diag = sp.diags(
+            vec.idf_, offsets=0,
+            shape=(len(vec.idf_), len(vec.idf_)),
+            format='csr', dtype=np.float64
+        )
+        return vec
 
-        return df, tfidf, nv, av, cv
+    nv = rebuild_vec(os.path.join(MODS, 'notes_vocab.json'))
+    av = rebuild_vec(os.path.join(MODS, 'accords_vocab.json'))
+    cv = rebuild_vec(os.path.join(MODS, 'context_vocab.json'))
+
+    df['brand'] = df['brand'].apply(
+        lambda b: BRAND_FIX.get(str(b).strip(), str(b).strip())
+    )
+    df['weather_label'] = (
+        df['best_season'].map(SEASON_MAP).fillna('')
+        if 'best_season' in df.columns else ''
+    )
+
+    return df, tfidf, nv, av, cv
 
 try:
     df, tfidf_matrix, notes_vec, accords_vec, context_vec = load_models()
-    MODEL_OK = True
+    MODEL_OK  = True
     all_names = df['name'].dropna().tolist()
 except Exception as e:
-    MODEL_OK = False
+    MODEL_OK  = False
     MODEL_ERR = str(e)
     all_names = []
 
 def get_weather_now():
-    m = date.today().month
+    m   = date.today().month
     raw = ('Summer' if m in [6,7,8] else
            'Winter' if m in [12,1,2] else
            'Spring' if m in [3,4,5] else 'Autumn')
     return SEASON_MAP.get(raw, raw)
 
 def rescale(sim):
-    c = max(0.0, min(1.0, float(sim)))
-    return int(c * 100)
+    return int(max(0.0, min(1.0, float(sim))) * 100)
 
 def match_color(pct):
     if pct >= 75: return '#4CAF50'
@@ -361,49 +333,34 @@ def avg_sparse(mat, idxs):
     return sp.csr_matrix(np.asarray(stacked.mean(axis=0)))
 
 def find_idx(name):
-    """Brand-aware fuzzy matching - prioritizes matches from the same brand"""
     nl = name.lower().strip()
-    
-    # Exact match first
     ex = df[df['name'].str.lower().str.strip() == nl]
     if len(ex):
         return ex.index[0], df.loc[ex.index[0], 'name'], 100
-    
-    # Try to detect brand + perfume name pattern
+
     words = nl.split()
     brand_match = None
     perfume_term = nl
-    
     for word in words:
         if word.lower() in KNOWN_BRANDS:
             brand_match = word.lower()
-            # Remove brand from search term
             perfume_term = nl.replace(word, '').strip()
             break
-    
-    # If brand detected, search within that brand first
+
     if brand_match:
-        brand_perfumes = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
-        if len(brand_perfumes) > 0:
-            # Try to match the perfume name within the brand
-            if perfume_term:
-                m = process.extractOne(perfume_term, brand_perfumes['name'].tolist(), scorer=fuzz.ratio)
-                if m and m[1] >= 70:
-                    idx = brand_perfumes[brand_perfumes['name'] == m[0]].index[0]
-                    return idx, m[0], m[1]
-            # If no specific perfume term, suggest the most popular from that brand
-            else:
-                top_brand = brand_perfumes.nlargest(1, 'popularity_score')
-                if len(top_brand) > 0:
-                    idx = top_brand.index[0]
-                    return idx, top_brand.iloc[0]['name'], 80
-    
-    # Fallback to general fuzzy search
+        brand_df = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
+        if len(brand_df) > 0 and perfume_term:
+            m = process.extractOne(
+                perfume_term, brand_df['name'].tolist(), scorer=fuzz.ratio
+            )
+            if m and m[1] >= 70:
+                idx = brand_df[brand_df['name'] == m[0]].index[0]
+                return idx, m[0], m[1]
+
     m = process.extractOne(name, all_names, scorer=fuzz.ratio)
     if m and m[1] >= 70:
         idx = df[df['name'] == m[0]].index[0]
         return idx, m[0], m[1]
-    
     return None, None, 0
 
 BRAND_INDEX = {}
@@ -413,44 +370,34 @@ def build_brand_index():
     if not BRAND_INDEX:
         for brand in df['brand'].unique():
             if pd.notna(brand):
-                brand_lower = str(brand).lower()
-                BRAND_INDEX[brand_lower] = df[df['brand'].str.lower() == brand_lower]['name'].tolist()
+                bl = str(brand).lower()
+                BRAND_INDEX[bl] = df[df['brand'].str.lower() == bl]['name'].tolist()
 
-# Cached suggestions for speed
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_flanker_suggestions_cached(query, n=6):
-    """Cached version of suggestions"""
     build_brand_index()
     last = query.split(',')[-1].strip()
     if len(last) < 3:
         return []
-    
-    words = last.split()
+
     brand_match = None
-    
-    for word in words:
+    for word in last.split():
         if word.lower() in KNOWN_BRANDS:
             brand_match = word.lower()
             break
-    
+
     if brand_match and brand_match in BRAND_INDEX:
-        brand_perfumes = BRAND_INDEX.get(brand_match, [])
-        # Limit search to brand perfumes only
-        matches = process.extract(
-            last, brand_perfumes[:50], scorer=fuzz.partial_ratio, limit=n+5
-        )
+        pool = BRAND_INDEX[brand_match][:100]
     else:
-        # Only search top 1000 popular perfumes (faster)
-        top_perfumes = df.nlargest(1000, 'popularity_score')['name'].tolist() if 'popularity_score' in df.columns else all_names[:1000]
-        matches = process.extract(
-            last, top_perfumes, scorer=fuzz.partial_ratio, limit=n+5
+        pool = (
+            df.nlargest(2000, 'popularity_score')['name'].tolist()
+            if 'popularity_score' in df.columns else all_names[:2000]
         )
-    
+
+    matches = process.extract(last, pool, scorer=fuzz.partial_ratio, limit=n+5)
     seen, results = set(), []
     for name, score, _ in matches:
-        if score < 60:
-            continue
-        if len(name.strip()) < 3:
+        if score < 60 or len(name.strip()) < 3:
             continue
         if name.lower().strip() == last.lower().strip():
             continue
@@ -459,167 +406,38 @@ def get_flanker_suggestions_cached(query, n=6):
             results.append(name)
         if len(results) >= n:
             break
-    
+
     if not results and brand_match:
-        brand_perfumes = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
-        results = brand_perfumes['name'].tolist()[:4]
-    
+        brand_df = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
+        results  = brand_df['name'].tolist()[:4]
+
     return results
 
-def get_flanker_suggestions(query, n=6):
-    """Wrapper for cached suggestions"""
-    return get_flanker_suggestions_cached(query, n)
-
-def get_perfume_image(name):
-    row = df[df['name'].str.lower() == name.lower()]
-    if len(row) == 0:
-        return None
-    img = row.iloc[0].get('image_url')
-    if pd.notna(img) and str(img) not in ['nan','None','']:
-        return str(img)
-    return None
-
 def get_perfume_image_by_name(name):
-    """Get perfume image URL by exact name match"""
     row = df[df['name'].str.lower() == name.lower()]
     if len(row) == 0:
         return None
     img = row.iloc[0].get('image_url')
-    if pd.notna(img) and str(img) not in ['nan','None','']:
-        return str(img)
-    return None
+    return str(img) if pd.notna(img) and str(img) not in ['nan','None',''] else None
 
-# FIXED: Improved category perfume matching with min_matches requirement
 @st.cache_data(show_spinner=False)
 def get_category_perfumes(category_keywords, min_matches=2, limit=12):
-    """
-    Only returns perfumes that have at least min_matches keyword matches.
-    This prevents a single generic word like "sweet" from pulling in everything.
-    """
     scores = []
     for idx, row in df.iterrows():
         notes = str(row.get('all_notes', '')).lower()
         if not notes:
             continue
-        
-        # Count how many keywords match
-        matches = sum(1 for kw in category_keywords if kw in notes)
-        
-        # Only keep if matches >= min_matches
-        if matches >= min_matches:
+        n_matches = sum(1 for kw in category_keywords if kw in notes)
+        if n_matches >= min_matches:
             scores.append({
-                'idx': idx,
-                'row': row,
-                'matches': matches,
+                'idx':        idx,
+                'row':        row,
+                'matches':    n_matches,
                 'popularity': row.get('popularity_score', 0)
             })
-    
-    # Sort by matches (descending), then by popularity
     scores.sort(key=lambda x: (x['matches'], x['popularity']), reverse=True)
-    
-    # Return top N
     result_rows = [s['row'] for s in scores[:limit]]
-    if result_rows:
-        return pd.DataFrame(result_rows)
-    return pd.DataFrame()
-
-def render_category_card(name, img, desc):
-    img_b64_ = img_b64(img)
-    if img_b64_:
-        st.markdown(f"""
-        <div class="category-card">
-            <img src="{img_b64_}" style="width:100%;border-radius:8px;max-height:70px;object-fit:cover;"/>
-            <div style="color:#F5F0E8;font-size:0.7rem;font-weight:600;margin:0.3rem 0 0.1rem;font-family:'Playfair Display SC',serif;">{name}</div>
-            <div style="color:#555;font-size:0.55rem;margin-bottom:0.2rem;">{desc[:25]}...</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        return st.button(f"Explore", key=f"cat_{name}", use_container_width=True)
-    return False
-
-def render_scent_explorer():
-    st.markdown("""
-    <div style="text-align:center;padding:1rem 0 0.2rem;">
-        <h2 style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:1.1rem;letter-spacing:0.15em;margin-bottom:0;">
-            🌿 Explore by Scent Family
-        </h2>
-        <p style="color:#555;font-size:0.8rem;">Browse perfumes by mood and style</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    categories = [
-        ("🍬 Sweet & Gourmand", "scent_gourmand.png", VIBE_CATEGORIES["🍬 Sweet & Gourmand"]["description"]),
-        ("🔥 Warm & Sensual", "scent_oriental.png", VIBE_CATEGORIES["🔥 Warm & Sensual"]["description"]),
-        ("🌲 Woody & Bold", "scent_woody.png", VIBE_CATEGORIES["🌲 Woody & Bold"]["description"]),
-        ("🌹 Floral & Soft", "scent_floral.png", VIBE_CATEGORIES["🌹 Floral & Soft"]["description"]),
-        ("🌊 Fresh & Clean", "scent_fresh.png", VIBE_CATEGORIES["🌊 Fresh & Clean"]["description"])
-    ]
-    
-    cols = st.columns(5)
-    for i, (name, img, desc) in enumerate(categories):
-        with cols[i]:
-            if render_category_card(name, img, desc):
-                st.session_state['selected_category'] = name
-                st.rerun()
-
-def render_category_page(category_name):
-    category_data = VIBE_CATEGORIES.get(category_name)
-    if not category_data:
-        return
-    
-    st.markdown(f"""
-    <div style="text-align:center;padding:0.5rem 0 0.5rem;">
-        <h2 style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:1.3rem;letter-spacing:0.1em;">
-            {category_name}
-        </h2>
-        <p style="color:#555;font-size:0.85rem;">{category_data['description']}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    img_b64_ = img_b64(category_data['image'])
-    if img_b64_:
-        st.markdown(f"""
-        <img src="{img_b64_}" class="category-hero" style="max-height:120px;width:100%;object-fit:cover;border-radius:12px;"/>
-        """, unsafe_allow_html=True)
-    
-    if 'category_limit' not in st.session_state:
-        st.session_state['category_limit'] = 12
-    
-    with st.spinner("Finding perfumes in this category..."):
-        category_perfumes_all = get_category_perfumes(
-            category_data['keywords'], 
-            min_matches=2,  # Require at least 2 keyword matches
-            limit=st.session_state['category_limit']
-        )
-    
-    if len(category_perfumes_all) == 0:
-        st.info("No perfumes found in this category yet.")
-        return
-    
-    st.markdown(f"""
-    <div style="margin:0.5rem 0 0.3rem;padding-bottom:0.3rem;border-bottom:0.5px solid #1e1e1e;">
-        <span style="font-family:'Playfair Display SC',serif;color:#C9A84C;font-size:0.7rem;letter-spacing:0.15em;">
-            {len(category_perfumes_all)} PERFUMES IN THIS FAMILY
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    cols = st.columns(3)
-    for idx, (_, row) in enumerate(category_perfumes_all.iterrows()):
-        with cols[idx % 3]:
-            st.markdown(render_card_html(row, 'KE', show_match=False), unsafe_allow_html=True)
-    
-    if len(category_perfumes_all) >= st.session_state['category_limit']:
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("📥 Load More Perfumes", use_container_width=True):
-                st.session_state['category_limit'] += 12
-                st.rerun()
-    
-    if st.button("← Back to All Categories", use_container_width=True):
-        st.session_state['selected_category'] = None
-        st.session_state['category_limit'] = 12
-        st.rerun()
+    return pd.DataFrame(result_rows) if result_rows else pd.DataFrame()
 
 def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
     if not perfume_names and not notes_input:
@@ -649,33 +467,33 @@ def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
             if si is not None and sc >= 80:
                 sim_idxs.append(si)
         if sim_idxs:
-            sv = avg_sparse(tfidf_matrix, sim_idxs)
+            sv   = avg_sparse(tfidf_matrix, sim_idxs)
             qvec = qvec.multiply(0.8) + sv.multiply(0.2)
     else:
         clean = re.sub(r'[^\w\s]', ' ', notes_input.lower())
-        np_ = notes_vec.transform([clean]) * 0.60
+        np_   = notes_vec.transform([clean]) * 0.60
         n_acc = max(tfidf_matrix.shape[1] - np_.shape[1] - 3, 1)
-        ea = sp.csr_matrix((1, n_acc))
-        ec = sp.csr_matrix((1, 3))
+        ea    = sp.csr_matrix((1, n_acc))
+        ec    = sp.csr_matrix((1, 3))
         try:
             qvec = hstack([np_, ea, ec])
         except Exception:
             qvec = np_
 
-    sims = cosine_similarity(qvec, tfidf_matrix).flatten()
-    res = df.copy()
+    sims        = cosine_similarity(qvec, tfidf_matrix).flatten()
+    res         = df.copy()
     res['_sim'] = sims
 
-    for name, boost_score in DUPE_BOOSTS.items():
-        mask = res['name'].str.lower() == name.lower()
+    for boost_name, boost_score in DUPE_BOOSTS.items():
+        mask = res['name'].str.lower() == boost_name.lower()
         if mask.any():
-            current_sim = res.loc[mask, '_sim'].values[0]
-            if current_sim < boost_score:
-                res.loc[mask, '_sim'] = min(current_sim + 0.25, 0.95)
+            cur = res.loc[mask, '_sim'].values[0]
+            if cur < boost_score:
+                res.loc[mask, '_sim'] = min(cur + 0.25, 0.95)
 
     if perfume_names:
         owned = [n.lower().strip() for n in perfume_names]
-        res = res[~res['name'].str.lower().str.strip().isin(owned)]
+        res   = res[~res['name'].str.lower().str.strip().isin(owned)]
 
     if 'feature_string' in res.columns:
         res = res[res['feature_string'].str.len().fillna(0) >= 50]
@@ -688,17 +506,16 @@ def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
     if len(res) == 0:
         return None, found
 
-    sc = MinMaxScaler()
+    sc  = MinMaxScaler()
     res = res.copy()
     res['_sn'] = sc.fit_transform(res[['_sim']])
-    if 'popularity_score' in res.columns:
-        res['_pn'] = sc.fit_transform(res[['popularity_score']].fillna(0))
-    else:
-        res['_pn'] = 0
-
+    res['_pn'] = (
+        sc.fit_transform(res[['popularity_score']].fillna(0))
+        if 'popularity_score' in res.columns else 0
+    )
     res['_score'] = 0.65 * res['_sn'] + 0.35 * res['_pn']
-    res['_rf'] = res['rating_avg'].fillna(0)
-    res['_rc'] = res['rating_count'].fillna(0)
+    res['_rf']    = res['rating_avg'].fillna(0)
+    res['_rc']    = res['rating_count'].fillna(0)
     res = res.sort_values(['_score','_rf','_rc'], ascending=False)
 
     if 'flanker_group' in res.columns:
@@ -711,61 +528,59 @@ def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
     return res.head(n), found
 
 def build_retailer_links(name, url, loc='KE'):
-    q = name.replace(' ', '+')
+    q     = name.replace(' ', '+')
     links = []
-    
+
     if url and str(url) not in ['nan','None','']:
-        fragrantica_url = url if url.startswith('http') else f"https://www.fragrantica.com{url}"
-        links.append(('📖', 'Fragrantica', fragrantica_url, 'Perfume Info'))
-    
+        frag_url = url if url.startswith('http') \
+                   else f"https://www.fragrantica.com{url}"
+        links.append(('📖', 'Fragrantica', frag_url, 'Perfume Info'))
+
     if loc == 'KE':
-        links.append(('🛍️', 'Perfume Plug KE', 
-                     f'https://perfumeplugkenya.com/?s={q}', 
-                     'Kenya · Local'))
-        links.append(('💄', 'Lintons Beauty', 
-                     f'https://www.lintonsbeauty.com/?s={q}', 
-                     'Kenya · Local'))
-        links.append(('🌍', 'Notino', 
-                     f'https://www.notino.co.uk/search/?q={q}', 
-                     'Int\'l · Ships KE'))
-        links.append(('💰', 'FragranceNet', 
-                     f'https://www.fragrancenet.com/fragrances?q={q}', 
-                     'Int\'l · Discounted'))
+        links.append(('🛍️', 'Perfume Plug KE',
+                       f'https://perfumeplugkenya.com/?s={q}', 'Kenya · Local'))
+        links.append(('💄', 'Lintons Beauty',
+                       f'https://www.lintonsbeauty.com/?s={q}', 'Kenya · Local'))
+        links.append(('🌍', 'Notino',
+                       f'https://www.notino.co.uk/search/?q={q}', "Int'l · Ships KE"))
+        links.append(('💰', 'FragranceNet',
+                       f'https://www.fragrancenet.com/fragrances?q={q}', "Int'l · Discounted"))
     else:
-        links.append(('🌍', 'Notino', 
-                     f'https://www.notino.co.uk/search/?q={q}', 
-                     'UK / Europe'))
-        links.append(('💰', 'FragranceNet', 
-                     f'https://www.fragrancenet.com/fragrances?q={q}', 
-                     'USA · Discounted'))
-    
+        links.append(('🌍', 'Notino',
+                       f'https://www.notino.co.uk/search/?q={q}', 'UK / Europe'))
+        links.append(('💰', 'FragranceNet',
+                       f'https://www.fragrancenet.com/fragrances?q={q}', 'USA · Discounted'))
+
     return links
 
-# FIXED: render_card_html with proper match display and clickable links
 def render_card_html(row, loc='KE', show_match=True):
-    name = str(row.get('name', ''))
-    brand = str(row.get('brand', ''))
-    tier = str(row.get('price_tier', 'mid'))
-    accords = str(row.get('accords', '') or '')
-    rating = row.get('rating_avg')
-    rcount = row.get('rating_count')
-    sim = row.get('_sim', 0)
-    dupe_of = row.get('dupe_of')
-    img_url = row.get('image_url')
-    url = row.get('url', '')
-    gender_v = str(row.get('gender', '') or '').title()
+    name      = str(row.get('name', ''))
+    brand     = str(row.get('brand', ''))
+    tier      = str(row.get('price_tier', 'mid'))
+    accords   = str(row.get('accords', '') or '')
+    rating    = row.get('rating_avg')
+    rcount    = row.get('rating_count')
+    sim       = row.get('_sim', 0)
+    dupe_of   = row.get('dupe_of')
+    img_url   = row.get('image_url')
+    url       = row.get('url', '')
+    gender_v  = str(row.get('gender', '') or '').title()
     weather_v = str(row.get('weather_label', '') or '')
     notes_raw = str(row.get('all_notes', '') or '')
 
-    tier_clr = {'budget':'#7A8C7E','mid':'#C9A84C',
-                'premium':'#E8C87A','luxury':'#FFD700'}.get(tier,'#C9A84C')
+    tier_clr  = {'budget':'#7A8C7E','mid':'#C9A84C',
+                 'premium':'#E8C87A','luxury':'#FFD700'}.get(tier,'#C9A84C')
     price_lbl = PRICE_LABELS.get(tier, tier)
     match_pct = rescale(sim)
     match_clr = match_color(match_pct)
 
     img_tag = ''
     if img_url and str(img_url) not in ['nan','None','']:
-        img_tag = f'<img src="{img_url}" style="width:100%;height:140px;object-fit:contain;background:#161616;border-radius:8px;padding:8px;margin-bottom:0.7rem;" />'
+        img_tag = (
+            f'<img src="{img_url}" style="width:100%;height:140px;'
+            f'object-fit:contain;background:#161616;border-radius:8px;'
+            f'padding:8px;margin-bottom:0.7rem;" />'
+        )
 
     note_items = []
     for part in re.split(r'[|,]', notes_raw):
@@ -775,13 +590,17 @@ def render_card_html(row, loc='KE', show_match=True):
         if len(note_items) >= 5:
             break
 
-    pills_html = ''
-    for note in note_items:
-        emoji = get_note_emoji(note)
-        pills_html += f'<span style="display:inline-block;background:#1a1a1a;border:0.5px solid #2a2a2a;color:#666;border-radius:10px;padding:2px 8px;font-size:0.68rem;margin:2px 2px 2px 0;">{emoji} {note}</span>'
+    pills_html = ''.join(
+        f'<span style="display:inline-block;background:#1a1a1a;'
+        f'border:0.5px solid #2a2a2a;color:#666;border-radius:10px;'
+        f'padding:2px 8px;font-size:0.68rem;margin:2px 2px 2px 0;">'
+        f'{get_note_emoji(n)} {n}</span>'
+        for n in note_items
+    )
 
-    accord_items = [a.strip() for a in accords.split(',') if a.strip() and a.lower() not in ['nan','']][:4]
-    accord_line = ' · '.join(accord_items)
+    accord_items = [a.strip() for a in accords.split(',')
+                    if a.strip() and a.lower() not in ['nan','']][:4]
+    accord_line  = ' · '.join(accord_items)
 
     meta_parts = []
     if rating and not pd.isna(rating):
@@ -795,61 +614,66 @@ def render_card_html(row, loc='KE', show_match=True):
         meta_parts.append(f'{we} {weather_v}')
     meta_line = '  ·  '.join(meta_parts)
 
-    dupe_html = ''
-    dupe_str = str(dupe_of) if dupe_of else ''
-    if dupe_str and dupe_str not in ['nan','None','']:
-        dupe_html = f'<div style="color:#8B3A52;font-size:0.72rem;margin:0.4rem 0;padding-top:0.4rem;border-top:0.5px solid #1e1e1e;">💡 Smells like {dupe_str}</div>'
+    dupe_str  = str(dupe_of) if dupe_of else ''
+    dupe_html = (
+        f'<div style="color:#8B3A52;font-size:0.72rem;'
+        f'margin:0.4rem 0;padding-top:0.4rem;'
+        f'border-top:0.5px solid #1e1e1e;">💡 Smells like {dupe_str}</div>'
+    ) if dupe_str and dupe_str not in ['nan','None',''] else ''
 
-    retailers = build_retailer_links(name, url, loc)
-    links_html_parts = []
-    for emoji, label, link_url, note in retailers:
-        links_html_parts.append(f'<a href="{link_url}" target="_blank" style="display:inline-block;margin:3px 4px 3px 0;text-decoration:none;color:#C9A84C;font-size:0.72rem;border:0.5px solid #2a2a2a;border-radius:5px;padding:3px 8px;">{emoji} {label}</a>')
-    links_html = ''.join(links_html_parts)
+    retailers  = build_retailer_links(name, url, loc)
+    links_html = ''.join(
+        f'<a href="{u}" target="_blank" style="display:inline-block;'
+        f'margin:3px 4px 3px 0;text-decoration:none;color:#C9A84C;'
+        f'font-size:0.72rem;border:0.5px solid #2a2a2a;border-radius:5px;'
+        f'padding:3px 8px;">{e} {lbl}</a>'
+        for e, lbl, u, _ in retailers
+    )
 
-    match_html = ""
-    if show_match:
-        match_html = f'<div style="text-align:right;flex-shrink:0;margin-left:0.6rem;"><div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;white-space:nowrap;">{price_lbl}</div><div style="color:{match_clr};font-size:1.1rem;font-weight:700;margin-top:3px;">{match_pct}%</div><div style="color:#333;font-size:0.6rem;">match</div></div>'
+    match_html = (
+        f'<div style="text-align:right;flex-shrink:0;margin-left:0.6rem;">'
+        f'<div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;'
+        f'border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;'
+        f'white-space:nowrap;">{price_lbl}</div>'
+        f'<div style="color:{match_clr};font-size:1.1rem;font-weight:700;'
+        f'margin-top:3px;">{match_pct}%</div>'
+        f'<div style="color:#333;font-size:0.6rem;">match</div>'
+        f'</div>'
+    ) if show_match else (
+        f'<div style="text-align:right;flex-shrink:0;margin-left:0.6rem;">'
+        f'<div style="color:{tier_clr};font-size:0.65rem;letter-spacing:0.08em;'
+        f'border:0.5px solid {tier_clr}44;padding:2px 6px;border-radius:3px;">'
+        f'{price_lbl}</div></div>'
+    )
 
-    # Build accordion line
-    accord_div = ''
-    if accord_line:
-        accord_div = f'<div style="color:#555;font-size:0.74rem;margin-bottom:0.4rem;">{accord_line}</div>'
-    
-    # Build pills div
-    pills_div = ''
-    if pills_html:
-        pills_div = f'<div style="margin-bottom:0.4rem;">{pills_html}</div>'
-    
-    # Build meta div
-    meta_div = ''
-    if meta_line:
-        meta_div = f'<div style="color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;">{meta_line}</div>'
-
-    card = f'''
-    <div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">
+    return f'''
+    <div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;
+                padding:1.1rem;display:flex;flex-direction:column;">
       {img_tag}
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
+      <div style="display:flex;justify-content:space-between;
+                  align-items:flex-start;margin-bottom:0.4rem;">
         <div style="flex:1;min-width:0;">
-          <div style="font-family:Playfair Display SC,serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div>
-          <div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div>
+          <div style="font-family:Playfair Display SC,serif;color:#F5F0E8;
+                      font-size:0.95rem;white-space:nowrap;overflow:hidden;
+                      text-overflow:ellipsis;">{name}</div>
+          <div style="color:#666;font-size:0.78rem;margin-top:1px;
+                      white-space:nowrap;overflow:hidden;
+                      text-overflow:ellipsis;">{brand}</div>
         </div>
         {match_html}
       </div>
-      {accord_div}
-      {pills_div}
-      {meta_div}
+      {f'<div style="color:#555;font-size:0.74rem;margin-bottom:0.4rem;">{accord_line}</div>' if accord_line else ''}
+      {f'<div style="margin-bottom:0.4rem;">{pills_html}</div>' if pills_html else ''}
+      {f'<div style="color:#2e2e2e;font-size:0.7rem;margin-bottom:0.3rem;">{meta_line}</div>' if meta_line else ''}
       {dupe_html}
       <div style="margin-top:auto;padding-top:0.6rem;border-top:0.5px solid #1a1a1a;">
         {links_html}
       </div>
-    </div>
-    '''
-    return card
+    </div>'''
 
 def render_header():
     official = img_b64('official_logo')
-    hero = img_b64('hero')
-
+    hero     = img_b64('hero')
     hero_css = ''
     if hero:
         hero_css = (
@@ -861,24 +685,17 @@ def render_header():
             f"background-size:cover;"
             f"background-position:center 35%;"
         )
-
-    img_part = ''
-    if official:
-        img_part = (
-            f"<img src='{official}' "
-            f"style='max-width:800px;width:95%;"
-            f"display:block;margin:0 auto;' />"
-        )
-    else:
-        img_part = (
-            "<h1 style='font-family:Playfair Display SC,serif;"
-            "color:#C9A84C;letter-spacing:0.15em;"
-            "font-size:2rem;margin:0;'>Beyond Fragrancy</h1>"
-            "<p style='color:#888;letter-spacing:0.2em;"
-            "font-size:0.78rem;text-transform:uppercase;"
-            "margin:0.3rem 0 0;'>say less. we know your scent.</p>"
-        )
-
+    img_part = (
+        f"<img src='{official}' style='max-width:800px;width:95%;"
+        f"display:block;margin:0 auto;' />"
+    ) if official else (
+        "<h1 style='font-family:Playfair Display SC,serif;"
+        "color:#C9A84C;letter-spacing:0.15em;font-size:2rem;margin:0;'>"
+        "Beyond Fragrancy</h1>"
+        "<p style='color:#888;letter-spacing:0.2em;font-size:0.78rem;"
+        "text-transform:uppercase;margin:0.3rem 0 0;'>"
+        "say less. we know your scent.</p>"
+    )
     st.markdown(
         f"<div style='{hero_css}padding:2.5rem 1rem 1.5rem;"
         f"text-align:center;border-bottom:0.5px solid #1a1a1a;'>"
@@ -889,69 +706,200 @@ def render_header():
 def render_sidebar():
     with st.sidebar:
         st.markdown("""
-        <div style="font-family:'Playfair Display SC',serif;
-                    color:#C9A84C;font-size:0.8rem;
-                    letter-spacing:0.2em;text-transform:uppercase;
+        <div style="font-family:'Playfair Display SC',serif;color:#C9A84C;
+                    font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;
                     margin-bottom:1rem;padding-bottom:0.5rem;
-                    border-bottom:0.5px solid #1a1a1a;">
-          Refine Results
-        </div>
+                    border-bottom:0.5px solid #1a1a1a;">Refine Results</div>
         """, unsafe_allow_html=True)
-
-        st.markdown(
-            "<p style='color:#555;font-size:0.75rem;"
-            "margin-bottom:0.3rem;'>Location</p>",
-            unsafe_allow_html=True
-        )
-        location = st.radio(
-            "loc", ["🇰🇪 Kenya", "🌍 International"],
-            label_visibility="collapsed"
-        )
+        location = st.radio("loc", ["🇰🇪 Kenya","🌍 International"],
+                            label_visibility="collapsed")
         loc = 'KE' if 'Kenya' in location else 'INT'
-
-        st.markdown("<div style='height:0.8rem'></div>",
-                    unsafe_allow_html=True)
-
-        st.markdown(
-            "<p style='color:#555;font-size:0.75rem;"
-            "margin-bottom:0.3rem;'>Number of results</p>",
-            unsafe_allow_html=True
-        )
-        n_res = st.slider("n", 6, 24, 12,
-                          label_visibility="collapsed")
-
-        st.markdown("<div style='height:0.8rem'></div>",
-                    unsafe_allow_html=True)
-
+        st.markdown("<div style='height:0.8rem'></div>", unsafe_allow_html=True)
+        n_res = st.slider("n", 6, 24, 12, label_visibility="collapsed")
         st.markdown("""
-        <div style="font-size:0.72rem;color:#333;
-                    line-height:1.6;padding:0.8rem;
-                    background:#0d0d0d;border-radius:8px;
+        <div style="font-size:0.72rem;color:#333;line-height:1.6;
+                    padding:0.8rem;background:#0d0d0d;border-radius:8px;
                     border:0.5px solid #1a1a1a;">
           <strong style="color:#555;">How matching works</strong><br>
           We compute scent DNA similarity across 150,000+ perfumes.
           Results above 70% are strong matches.
-          Budget tiers are shown on each card — filter visually.
+          Budget tiers are shown on each card.
         </div>
         """, unsafe_allow_html=True)
-
     return loc, n_res
+
+def render_scent_explorer():
+    st.markdown("""
+    <div style="text-align:center;padding:1rem 0 0.2rem;">
+      <h2 style="font-family:'Playfair Display SC',serif;color:#C9A84C;
+                 font-size:1.1rem;letter-spacing:0.15em;margin-bottom:0;">
+        🌿 Explore by Scent Family</h2>
+      <p style="color:#555;font-size:0.8rem;">Browse perfumes by mood and style</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    categories = [
+        ("🍬 Sweet & Gourmand", "scent_gourmand.png",
+         VIBE_CATEGORIES["🍬 Sweet & Gourmand"]["description"]),
+        ("🔥 Warm & Sensual",  "scent_oriental.png",
+         VIBE_CATEGORIES["🔥 Warm & Sensual"]["description"]),
+        ("🌲 Woody & Bold",    "scent_woody.png",
+         VIBE_CATEGORIES["🌲 Woody & Bold"]["description"]),
+        ("🌹 Floral & Soft",   "scent_floral.png",
+         VIBE_CATEGORIES["🌹 Floral & Soft"]["description"]),
+        ("🌊 Fresh & Clean",   "scent_fresh.png",
+         VIBE_CATEGORIES["🌊 Fresh & Clean"]["description"]),
+    ]
+
+    cols = st.columns(5)
+    for i, (name, img, desc) in enumerate(categories):
+        with cols[i]:
+            b64 = img_b64(img)
+            if b64:
+                st.markdown(
+                    f'<div class="category-card">'
+                    f'<img src="{b64}" style="width:100%;border-radius:8px;'
+                    f'max-height:70px;object-fit:cover;"/>'
+                    f'<div style="color:#F5F0E8;font-size:0.7rem;font-weight:600;'
+                    f'margin:0.3rem 0 0.1rem;font-family:Playfair Display SC,serif;">'
+                    f'{name}</div>'
+                    f'<div style="color:#555;font-size:0.55rem;">'
+                    f'{desc[:28]}...</div></div>',
+                    unsafe_allow_html=True
+                )
+            if st.button("Explore", key=f"cat_{i}", use_container_width=True):
+                st.session_state['selected_category'] = name
+                st.rerun()
+
+def render_category_page(category_name):
+    cat = VIBE_CATEGORIES.get(category_name)
+    if not cat:
+        return
+
+    st.markdown(
+        f"<div style='text-align:center;padding:0.5rem 0;'>"
+        f"<h2 style='font-family:Playfair Display SC,serif;color:#C9A84C;"
+        f"font-size:1.3rem;'>{category_name}</h2>"
+        f"<p style='color:#555;font-size:0.85rem;'>{cat['description']}</p>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
+    b64 = img_b64(cat['image'])
+    if b64:
+        st.markdown(
+            f'<img src="{b64}" style="max-height:120px;width:100%;'
+            f'object-fit:cover;border-radius:12px;"/>',
+            unsafe_allow_html=True
+        )
+
+    if 'category_limit' not in st.session_state:
+        st.session_state['category_limit'] = 12
+
+    with st.spinner("Finding perfumes..."):
+        cat_df = get_category_perfumes(
+            cat['keywords'], min_matches=2,
+            limit=st.session_state['category_limit']
+        )
+
+    if len(cat_df) == 0:
+        st.info("No perfumes found in this category.")
+    else:
+        st.markdown(
+            f"<div style='margin:0.5rem 0;padding-bottom:0.3rem;"
+            f"border-bottom:0.5px solid #1e1e1e;'>"
+            f"<span style='font-family:Playfair Display SC,serif;"
+            f"color:#C9A84C;font-size:0.7rem;letter-spacing:0.15em;'>"
+            f"{len(cat_df)} PERFUMES IN THIS FAMILY</span></div>",
+            unsafe_allow_html=True
+        )
+        cols = st.columns(3)
+        for idx, (_, row) in enumerate(cat_df.iterrows()):
+            with cols[idx % 3]:
+                st.markdown(
+                    render_card_html(row, 'KE', show_match=False),
+                    unsafe_allow_html=True
+                )
+        if len(cat_df) >= st.session_state['category_limit']:
+            _, mid, _ = st.columns([1,2,1])
+            with mid:
+                if st.button("📥 Load More", use_container_width=True):
+                    st.session_state['category_limit'] += 12
+                    st.rerun()
+
+    if st.button("← Back to Categories", use_container_width=True):
+        st.session_state['selected_category'] = None
+        st.session_state['category_limit']    = 12
+        st.rerun()
+
+def run_search(perfume_names, notes_input, n_res, dupes_only, loc):
+    """Shared search logic called from both the button and suggestion clicks."""
+    with st.spinner("We did the sniffing so you don't have to..."):
+        results, found = recommend(
+            perfume_names=perfume_names,
+            notes_input=notes_input,
+            n=n_res,
+            dupes_only=dupes_only
+        )
+
+    if results is None or len(results) == 0:
+        st.markdown("""
+        <div style="text-align:center;padding:3rem 1rem;color:#333;">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">🤷</div>
+          <p style="color:#555;">No strong matches found.</p>
+          <p style="font-size:0.82rem;">
+            Try a different name, check spelling,
+            or describe the notes instead.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
+    if found:
+        st.markdown(
+            f"<p style='color:#333;font-size:0.76rem;margin:0.5rem 0 0.3rem;'>"
+            f"Based on: {', '.join(found)}</p>",
+            unsafe_allow_html=True
+        )
+
+    weather_now = get_weather_now()
+    we          = SEASON_EMOJI.get(weather_now,'')
+    label       = "Affordable alternatives" if dupes_only else "Recommended for you"
+
+    st.markdown(
+        f"<div style='display:flex;justify-content:space-between;"
+        f"align-items:center;margin:0.8rem 0 1rem;"
+        f"padding-bottom:0.5rem;border-bottom:0.5px solid #1e1e1e;'>"
+        f"<span style='font-family:Playfair Display SC,serif;"
+        f"color:#C9A84C;font-size:0.76rem;"
+        f"letter-spacing:0.2em;text-transform:uppercase;'>{label}</span>"
+        f"<span style='color:#2a2a2a;font-size:0.72rem;'>"
+        f"{we} {weather_now} &nbsp;·&nbsp; {len(results)} results</span>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
+    cols = st.columns(3)
+    for idx, (_, row) in enumerate(results.iterrows()):
+        with cols[idx % 3]:
+            st.markdown(render_card_html(row, loc, show_match=True),
+                        unsafe_allow_html=True)
+
+    st.markdown(
+        "<div style='text-align:center;padding:1rem 0;color:#222;"
+        "font-size:0.76rem;'>Budget shown on each card.</div>",
+        unsafe_allow_html=True
+    )
 
 def main():
     if not MODEL_OK:
         st.error(f"Model loading failed: {MODEL_ERR}")
-        st.info(
-            "Ensure df_app.csv, tfidf_matrix_checkpoint.npz, "
-            "notes_vocab.json, accords_vocab.json, "
-            "context_vocab.json are in the models/ folder. "
-            "These files should have been uploaded via Git LFS."
-        )
         return
 
     render_header()
     loc, n_res = render_sidebar()
 
-    if 'selected_category' in st.session_state and st.session_state['selected_category']:
+    # category page takes over the whole body
+    if st.session_state.get('selected_category'):
         render_category_page(st.session_state['selected_category'])
         return
 
@@ -971,188 +919,141 @@ def main():
             ["🔍  Perfume", "🎵  Notes & Vibe", "💰  Find a Dupe"]
         )
 
+        # shared state
         perfume_names = None
-        notes_input = None
-        dupes_only = False
-        raw = ''
+        notes_input   = None
+        dupes_only    = False
 
+        # ── TAB 1: By perfume name ─────────────────────────────────────
         with tab1:
             st.markdown(
-                "<p style='color:#444;font-size:0.82rem;"
-                "margin:0 0 0.5rem;'>Enter perfumes you already love. "
+                "<p style='color:#444;font-size:0.82rem;margin:0 0 0.5rem;'>"
+                "Enter perfumes you already love. "
                 "Separate multiple with commas.</p>",
                 unsafe_allow_html=True
             )
-            raw = st.text_input(
-                "pf", placeholder="e.g. Dior Sauvage, Chanel Chance",
-                label_visibility="collapsed", key="pf_input"
-            )
 
+            # Use session state to persist the input value across reruns
+            if 'pf_value' not in st.session_state:
+                st.session_state['pf_value'] = ''
+
+            raw = st.text_input(
+                "pf",
+                value=st.session_state['pf_value'],
+                placeholder="e.g. Dior Sauvage, Chanel Chance",
+                label_visibility="collapsed",
+                key="pf_input"
+            )
+            # keep session state in sync
+            st.session_state['pf_value'] = raw
+
+            # suggestions — only show when user is actively typing
+            # and has not yet clicked search
             if raw and len(raw.split(',')[-1].strip()) >= 3:
-                sugs = get_flanker_suggestions(raw, 6)
+                sugs = get_flanker_suggestions_cached(raw, 6)
                 if sugs:
                     st.markdown(
                         "<p style='color:#333;font-size:0.72rem;"
-                        "margin:0.4rem 0 0.3rem;'>"
-                        "Did you mean:</p>",
+                        "margin:0.4rem 0 0.3rem;'>Did you mean:</p>",
                         unsafe_allow_html=True
                     )
-                    # Display suggestions with images
                     sug_cols = st.columns(min(len(sugs), 6))
                     for i, sug in enumerate(sugs):
                         with sug_cols[i]:
                             img_url = get_perfume_image_by_name(sug)
-                            # Create styled suggestion card
-                            img_html = ""
-                            if img_url:
-                                img_html = f'<img src="{img_url}" class="suggestion-image"/>'
-                            else:
-                                # Fallback image
-                                img_html = f'<div style="width:60px;height:60px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.5rem;margin:0 auto;">📷</div>'
-                            
-                            st.markdown(f"""
-                            <div class="suggestion-container">
-                                {img_html}
-                                <div class="suggestion-name">{sug}</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            if st.button(f"Select", key=f"sug_{sug}", use_container_width=True):
-                                parts = [p.strip() for p in raw.split(',')]
-                                parts[-1] = sug
-                                raw = ', '.join(parts)
-                                st.session_state['suggestion_clicked'] = True
+                            img_html = (
+                                f'<img src="{img_url}" class="suggestion-image"/>'
+                                if img_url else
+                                '<div style="width:60px;height:60px;background:#1a1a1a;'
+                                'border-radius:6px;display:flex;align-items:center;'
+                                'justify-content:center;color:#333;margin:0 auto;">📷</div>'
+                            )
+                            # Get brand for the suggestion
+                            sug_row = df[df['name'].str.lower() == sug.lower()]
+                            sug_brand = sug_row.iloc[0]['brand'] \
+                                        if len(sug_row) > 0 else ''
+
+                            st.markdown(
+                                f'<div class="suggestion-container">'
+                                f'{img_html}'
+                                f'<div class="suggestion-name">{sug}</div>'
+                                f'<div class="suggestion-brand">{sug_brand}</div>'
+                                f'</div>',
+                                unsafe_allow_html=True
+                            )
+                            # Clicking the button sets the input value
+                            # AND triggers an immediate search
+                            if st.button("Select", key=f"sug_{i}",
+                                         use_container_width=True):
+                                st.session_state['pf_value']       = sug
+                                st.session_state['trigger_search']  = True
                                 st.rerun()
 
             if raw and raw.strip():
-                perfume_names = [p.strip() for p in raw.split(',') if p.strip()]
+                perfume_names = [p.strip() for p in raw.split(',')
+                                 if p.strip()]
 
+        # ── TAB 2: By notes — no vibe buttons ─────────────────────────
         with tab2:
             st.markdown(
-                "<p style='color:#444;font-size:0.82rem;"
-                "margin:0 0 0.5rem;'>Describe what you want to smell "
-                "like — ingredients, mood, or feeling.</p>",
+                "<p style='color:#444;font-size:0.82rem;margin:0 0 0.5rem;'>"
+                "Describe what you want to smell like — ingredients, "
+                "mood, or feeling.</p>",
                 unsafe_allow_html=True
             )
             raw_notes = st.text_input(
                 "nt",
-                placeholder="e.g. warm vanilla oud, or fresh citrus office",
-                label_visibility="collapsed", key="nt_input"
+                placeholder="e.g. warm vanilla oud, fresh citrus office",
+                label_visibility="collapsed",
+                key="nt_input"
             )
-            vibes = [
-                ("🔥 Warm & Sensual","vanilla oud amber warm spicy musk"),
-                ("🌊 Fresh & Clean", "bergamot citrus aquatic green fresh"),
-                ("🌹 Floral & Soft", "rose jasmine peony white floral"),
-                ("🌲 Woody & Bold",  "cedar sandalwood vetiver leather")
-            ]
-            vc = st.columns(4)
-            for i, (label, query) in enumerate(vibes):
-                with vc[i]:
-                    if st.button(label, key=f"vb_{i}", use_container_width=True):
-                        raw_notes = query
             if raw_notes and raw_notes.strip():
                 notes_input = raw_notes.strip()
 
+        # ── TAB 3: Find a dupe ─────────────────────────────────────────
         with tab3:
             st.markdown(
-                "<p style='color:#444;font-size:0.82rem;"
-                "margin:0 0 0.5rem;'>Enter a luxury perfume and we "
-                "find budget-friendly alternatives that smell "
-                "80-99% similar.</p>",
+                "<p style='color:#444;font-size:0.82rem;margin:0 0 0.5rem;'>"
+                "Enter a luxury perfume and we find budget-friendly "
+                "alternatives that smell 80-99% similar.</p>",
                 unsafe_allow_html=True
             )
             raw_dupe = st.text_input(
                 "dp",
                 placeholder="e.g. Baccarat Rouge 540, Creed Aventus",
-                label_visibility="collapsed", key="dp_input"
+                label_visibility="collapsed",
+                key="dp_input"
             )
             if raw_dupe and raw_dupe.strip():
                 perfume_names = [raw_dupe.strip()]
-                dupes_only = True
+                dupes_only    = True
 
-        st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:0.5rem'></div>",
+                    unsafe_allow_html=True)
 
-        go = st.button(
-            "Find my scent", type="primary",
-            use_container_width=True, key="go_btn"
-        )
+        go = st.button("Find my scent", type="primary",
+                       use_container_width=True, key="go_btn")
 
-        # FIXED: Check if a suggestion was clicked to auto-search with spinner
-        if go or st.session_state.get('suggestion_clicked', False):
+        # ── Trigger search from button OR suggestion click ─────────────
+        trigger = go or st.session_state.get('trigger_search', False)
+
+        if trigger:
+            # If triggered by suggestion, use the saved value
+            if st.session_state.get('trigger_search', False):
+                perfume_names = [st.session_state['pf_value']]
+                dupes_only    = False
+                st.session_state['trigger_search'] = False
+
             if perfume_names or notes_input:
-                with st.spinner("🔍 We did the sniffing so you don't have to..."):
-                    results, found = recommend(
-                        perfume_names=perfume_names,
-                        notes_input=notes_input,
-                        n=n_res,
-                        dupes_only=dupes_only
-                    )
-
-                # Reset suggestion flag after search
-                if st.session_state.get('suggestion_clicked', False):
-                    st.session_state['suggestion_clicked'] = False
-
-                if results is None or len(results) == 0:
-                    st.markdown("""
-                    <div style="text-align:center;padding:3rem 1rem;color:#333;">
-                      <div style="font-size:2.5rem;margin-bottom:0.5rem;">🤷</div>
-                      <p style="color:#555;font-size:0.95rem;">No strong matches found.</p>
-                      <p style="font-size:0.82rem;color:#333;">
-                        Try a different perfume name, check your spelling,
-                        or describe the notes instead.
-                      </p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    if found:
-                        st.markdown(
-                            f"<p style='color:#333;font-size:0.76rem;"
-                            f"margin:0.5rem 0 0.3rem;'>Based on: "
-                            f"{', '.join(found)}</p>",
-                            unsafe_allow_html=True
-                        )
-
-                    weather_now = get_weather_now()
-                    we = SEASON_EMOJI.get(weather_now,'')
-                    label = ("Affordable alternatives" if dupes_only else "Recommended for you")
-
-                    st.markdown(
-                        f"<div style='display:flex;justify-content:space-between;"
-                        f"align-items:center;margin:0.8rem 0 1rem;"
-                        f"padding-bottom:0.5rem;border-bottom:0.5px solid #1e1e1e;'>"
-                        f"<span style='font-family:Playfair Display SC,serif;"
-                        f"color:#C9A84C;font-size:0.76rem;"
-                        f"letter-spacing:0.2em;text-transform:uppercase;'>{label}</span>"
-                        f"<span style='color:#2a2a2a;font-size:0.72rem;'>"
-                        f"{we} {weather_now} &nbsp;·&nbsp; {len(results)} results</span>"
-                        f"</div>",
-                        unsafe_allow_html=True
-                    )
-
-                    cols = st.columns(3)
-                    for idx, (_, row) in enumerate(results.iterrows()):
-                        with cols[idx % 3]:
-                            st.markdown(render_card_html(row, loc, show_match=True), unsafe_allow_html=True)
-
-                    st.markdown(
-                        "<div style='text-align:center;padding:1rem 0;"
-                        "color:#222;font-size:0.76rem;margin-top:0.5rem;'>"
-                        "Budget shown on each card. Scroll to scan all options."
-                        "</div>",
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown("<div style='height:2rem;'></div>", unsafe_allow_html=True)
-                    render_scent_explorer()
-
-            elif go:
+                run_search(perfume_names, notes_input, n_res, dupes_only, loc)
+            else:
                 st.warning("Please enter a perfume name or describe your scent.")
 
-    if 'suggestion_clicked' not in st.session_state or not st.session_state.get('suggestion_clicked', False):
-        if 'go_btn' not in st.session_state or not st.session_state.get('go_btn', False):
-            if 'results' not in locals() or results is None:
-                st.markdown("<div style='height:1rem;'></div>", unsafe_allow_html=True)
-                render_scent_explorer()
+    # scent explorer shown below when not in search mode
+    if not trigger:
+        st.markdown("<div style='height:1rem;'></div>",
+                    unsafe_allow_html=True)
+        render_scent_explorer()
 
     st.markdown(
         "<div style='text-align:center;padding:2rem 1rem;"
