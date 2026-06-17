@@ -61,7 +61,6 @@ MIN_SIM = 0.20
 
 # Known dupe and flanker boosting scores
 DUPE_BOOSTS = {
-    # Known dupes
     'Club de Nuit Untold': 0.92,
     'Amber Rouge': 0.88,
     'Club de Nuit Intense Man': 0.90,
@@ -78,8 +77,6 @@ DUPE_BOOSTS = {
     'Ruby Whispers': 0.72,
     'Aquila': 0.70,
     'Baccarat Rouge 540 Scented Hair Mist': 0.75,
-    
-    # Flankers and alternate versions
     'Flora by Gucci Gorgeous Gardenia': 0.85,
     'Flora Gorgeous Gardenia Limited Edition 2020': 0.85,
     'Flora Gorgeous Gardenia Limited Edition 2018': 0.85,
@@ -87,7 +84,6 @@ DUPE_BOOSTS = {
     'Gucci Flora Gorgeous Gardenia': 0.85,
 }
 
-# Known brands for suggestion filtering
 KNOWN_BRANDS = [
     'gucci', 'dior', 'chanel', 'armani', 'tom ford', 'ysl', 
     'mugler', 'versace', 'paco rabanne', 'calvin klein', 
@@ -96,7 +92,6 @@ KNOWN_BRANDS = [
     'lattafa', 'armaf', 'afnan', 'al haramain', 'rasasi',
     'burberry', 'carolina herrera', 'givenchy', 'guerlain',
     'valentino', 'viktor rolf', 'prada', 'boss', 'zara',
-    'elie saab', 'estee lauder', 'clinique', 'lancome'
 ]
 
 def get_note_emoji(note):
@@ -117,170 +112,90 @@ def img_b64(filename):
     return None
 
 def inject_css():
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display+SC:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'DM Sans', sans-serif !important;
-        background-color: #0A0A0A !important;
-        color: #F5F0E8;
-    }
-    .main { background-color: #0A0A0A !important; }
-    .main .block-container {
-        padding-top: 0 !important;
-        padding-bottom: 3rem;
-        max-width: 1100px;
-    }
-    #MainMenu, footer, header { visibility: hidden; }
-    .stDeployButton { display: none; }
-
-    .stTabs [data-baseweb="tab-list"] {
-        background: transparent !important;
-        gap: 0.5rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background: #111 !important;
-        color: #666 !important;
-        border: 0.5px solid #2a2a2a !important;
-        border-radius: 8px !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.85rem !important;
-        letter-spacing: 0.08em !important;
-        padding: 0.4rem 1.4rem !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background: #C9A84C !important;
-        color: #0A0A0A !important;
-        border-color: #C9A84C !important;
-    }
-    .stTabs [data-baseweb="tab-border"] { display: none !important; }
-    .stTabs [data-baseweb="tab-panel"] { padding-top: 0.8rem !important; }
-
-    .stTextInput > div > div > input {
-        background: #111 !important;
-        border: 0.5px solid #2a2a2a !important;
-        color: #F5F0E8 !important;
-        border-radius: 8px;
-        font-size: 1rem;
-        padding: 0.7rem 1rem;
-    }
-    .stTextInput > div > div > input:focus {
-        border-color: #C9A84C !important;
-        box-shadow: 0 0 0 1px #C9A84C22 !important;
-    }
-    .stTextInput > div > div > input::placeholder { color: #444 !important; }
-    .stTextInput label { display: none; }
-
-    div[data-testid="stButton"] > button {
-        background: #111;
-        color: #666;
-        border: 0.5px solid #2a2a2a;
-        border-radius: 8px;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.82rem;
-        padding: 0.45rem 0.8rem;
-        transition: all 0.2s;
-        text-transform: none;
-        letter-spacing: 0.04em;
-        font-weight: 400;
-        width: 100%;
-    }
-    div[data-testid="stButton"] > button:hover {
-        border-color: #C9A84C !important;
-        color: #C9A84C !important;
-        background: #141414 !important;
-    }
-    div[data-testid="stButton"] > button[kind="primary"] {
-        background: #C9A84C !important;
-        color: #0A0A0A !important;
-        border: none !important;
-        font-size: 0.9rem !important;
-        letter-spacing: 0.12em !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        padding: 0.7rem 1.5rem !important;
-    }
-    div[data-testid="stButton"] > button[kind="primary"]:hover {
-        background: #E8C87A !important;
-        color: #0A0A0A !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 20px #C9A84C22 !important;
-    }
-
-    [data-testid="stSidebar"] {
-        background: #0d0d0d !important;
-        border-right: 0.5px solid #1a1a1a;
-    }
-    [data-testid="stSidebar"] label { color: #666 !important; font-size: 0.8rem; }
-    [data-testid="stSidebar"] .stSelectbox > div > div {
-        background: #111 !important;
-        border: 0.5px solid #2a2a2a !important;
-        color: #F5F0E8 !important;
-        border-radius: 6px;
-    }
-    [data-testid="stSidebar"] .stRadio label { color: #888 !important; }
-
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: #0A0A0A; }
-    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-    </style>
-    """, unsafe_allow_html=True)
+    with open(os.path.join(BASE, 'assets', 'css', 'style.css'), 'r') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 inject_css()
 
 @st.cache_resource(show_spinner="Loading Beyond Fragrancy...")
 def load_models():
-    df  = pd.read_csv(os.path.join(MODS, "df_app.csv"), low_memory=False)
-    df  = df.reset_index(drop=True)
-    mat = sp.load_npz(
-        os.path.join(MODS, "tfidf_matrix_checkpoint.npz")
-    ).tocsr()
+    import numpy as np
+    
+    if not hasattr(np, '_core'):
+        np._core = np.core
+    
+    models_dir = MODS
+    data_dir = os.path.join(BASE, '..', 'data')
 
-    def rebuild_vec(path):
-        with open(path) as f:
-            d = json.load(f)
-        p   = d['params']
-        vec = TfidfVectorizer(
-            max_features=p['max_features'],
-            ngram_range=tuple(p['ngram_range']),
-            min_df=p['min_df'], max_df=p['max_df'],
-            sublinear_tf=p['sublinear_tf']
+    with st.spinner("Loading Beyond Fragrancy..."):
+        # Load the master dataset from CSV
+        df_path = os.path.join(models_dir, 'df_app.csv')
+        if not os.path.exists(df_path):
+            df_path = os.path.join(data_dir, 'master_dataset.csv')
+        
+        if not os.path.exists(df_path):
+            raise FileNotFoundError(f"Data file not found at {df_path}")
+        
+        df = pd.read_csv(df_path, low_memory=False)
+        df = df.reset_index(drop=True)
+        print(f"Loaded {len(df):,} perfumes from {df_path}")
+        
+        # Load TF-IDF matrix
+        tfidf_path = os.path.join(models_dir, 'tfidf_matrix_checkpoint.npz')
+        tfidf = None
+        if os.path.exists(tfidf_path):
+            try:
+                tfidf = sp.load_npz(tfidf_path)
+                print(f"Loaded TF-IDF matrix: {tfidf.shape}")
+            except Exception as e:
+                print(f"Could not load TF-IDF: {e}")
+        
+        # Rebuild vectorizers from JSON
+        def rebuild_vec(path):
+            with open(path) as f:
+                d = json.load(f)
+            p = d['params']
+            vec = TfidfVectorizer(
+                max_features=p['max_features'],
+                ngram_range=tuple(p['ngram_range']),
+                min_df=p['min_df'], 
+                max_df=p['max_df'],
+                sublinear_tf=p['sublinear_tf']
+            )
+            vec.vocabulary_ = d['vocabulary']
+            vec.idf_ = np.array(d['idf'])
+            vec._tfidf._idf_diag = sp.diags(
+                vec.idf_, offsets=0,
+                shape=(len(vec.idf_), len(vec.idf_)),
+                format='csr', dtype=np.float64
+            )
+            return vec
+
+        nv = rebuild_vec(os.path.join(models_dir, 'notes_vocab.json'))
+        av = rebuild_vec(os.path.join(models_dir, 'accords_vocab.json'))
+        cv = rebuild_vec(os.path.join(models_dir, 'context_vocab.json'))
+
+        df['brand'] = df['brand'].apply(
+            lambda b: BRAND_FIX.get(str(b).strip(), str(b).strip())
         )
-        vec.vocabulary_ = d['vocabulary']
-        vec.idf_         = np.array(d['idf'])
-        vec._tfidf._idf_diag = sp.diags(
-            vec.idf_, offsets=0,
-            shape=(len(vec.idf_), len(vec.idf_)),
-            format='csr', dtype=np.float64
-        )
-        return vec
+        if 'best_season' in df.columns:
+            df['weather_label'] = df['best_season'].map(SEASON_MAP).fillna('')
+        else:
+            df['weather_label'] = ''
 
-    nv = rebuild_vec(os.path.join(MODS, "notes_vocab.json"))
-    av = rebuild_vec(os.path.join(MODS, "accords_vocab.json"))
-    cv = rebuild_vec(os.path.join(MODS, "context_vocab.json"))
-
-    df['brand'] = df['brand'].apply(
-        lambda b: BRAND_FIX.get(str(b).strip(), str(b).strip())
-    )
-    if 'best_season' in df.columns:
-        df['weather_label'] = df['best_season'].map(SEASON_MAP).fillna('')
-    else:
-        df['weather_label'] = ''
-
-    return df, mat, nv, av, cv
+        return df, tfidf, nv, av, cv
 
 try:
     df, tfidf_matrix, notes_vec, accords_vec, context_vec = load_models()
-    MODEL_OK  = True
+    MODEL_OK = True
     all_names = df['name'].dropna().tolist()
 except Exception as e:
-    MODEL_OK  = False
+    MODEL_OK = False
     MODEL_ERR = str(e)
     all_names = []
 
 def get_weather_now():
-    m   = date.today().month
+    m = date.today().month
     raw = ('Summer' if m in [6,7,8] else
            'Winter' if m in [12,1,2] else
            'Spring' if m in [3,4,5] else 'Autumn')
@@ -311,15 +226,24 @@ def find_idx(name):
         return idx, m[0], m[1]
     return None, None, 0
 
+# Build brand index for faster suggestions
+BRAND_INDEX = {}
+
+def build_brand_index():
+    global BRAND_INDEX
+    if not BRAND_INDEX:
+        for brand in df['brand'].unique():
+            if pd.notna(brand):
+                brand_lower = str(brand).lower()
+                BRAND_INDEX[brand_lower] = df[df['brand'].str.lower() == brand_lower]['name'].tolist()
+
 def get_flanker_suggestions(query, n=4):
-    """
-    Shows only relevant perfume suggestions based on the typed query.
-    Filters out nonsense matches by checking if the suggestion is a real perfume.
-    """
+    """Fast version using pre-built brand index"""
+    build_brand_index()
     last = query.split(',')[-1].strip()
     if len(last) < 3:
         return []
-
+    
     words = last.split()
     brand_match = None
     
@@ -328,9 +252,17 @@ def get_flanker_suggestions(query, n=4):
             brand_match = word.lower()
             break
     
-    matches = process.extract(
-        last, all_names, scorer=fuzz.partial_ratio, limit=30
-    )
+    if brand_match and brand_match in BRAND_INDEX:
+        brand_perfumes = BRAND_INDEX.get(brand_match, [])
+        matches = process.extract(
+            last, brand_perfumes, scorer=fuzz.partial_ratio, limit=n+5
+        )
+    else:
+        # Use top 5000 popular perfumes for speed
+        top_perfumes = df.nlargest(5000, 'popularity_score')['name'].tolist() if 'popularity_score' in df.columns else all_names[:5000]
+        matches = process.extract(
+            last, top_perfumes, scorer=fuzz.partial_ratio, limit=n+5
+        )
     
     seen, results = set(), []
     for name, score, _ in matches:
@@ -340,21 +272,6 @@ def get_flanker_suggestions(query, n=4):
             continue
         if name.lower().strip() == last.lower().strip():
             continue
-        
-        if brand_match:
-            row = df[df['name'] == name]
-            if len(row) > 0:
-                brand = str(row.iloc[0].get('brand', '')).lower()
-                if brand_match not in brand and brand_match not in name.lower():
-                    continue
-        
-        query_words = set(last.lower().split())
-        name_words = set(name.lower().split())
-        overlap = query_words & name_words
-        if not overlap and brand_match is None:
-            if score < 80:
-                continue
-        
         if name not in seen:
             seen.add(name)
             results.append(name)
@@ -363,8 +280,7 @@ def get_flanker_suggestions(query, n=4):
     
     if not results and brand_match:
         brand_perfumes = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
-        brand_names = brand_perfumes['name'].tolist()[:4]
-        results = brand_names
+        results = brand_perfumes['name'].tolist()[:4]
     
     return results
 
@@ -406,21 +322,21 @@ def recommend(perfume_names=None, notes_input=None,
             if si is not None and sc >= 80:
                 sim_idxs.append(si)
         if sim_idxs:
-            sv   = avg_sparse(tfidf_matrix, sim_idxs)
+            sv = avg_sparse(tfidf_matrix, sim_idxs)
             qvec = qvec.multiply(0.8) + sv.multiply(0.2)
     else:
         clean = re.sub(r'[^\w\s]', ' ', notes_input.lower())
-        np_   = notes_vec.transform([clean]) * 0.60
+        np_ = notes_vec.transform([clean]) * 0.60
         n_acc = max(tfidf_matrix.shape[1] - np_.shape[1] - 3, 1)
-        ea    = sp.csr_matrix((1, n_acc))
-        ec    = sp.csr_matrix((1, 3))
+        ea = sp.csr_matrix((1, n_acc))
+        ec = sp.csr_matrix((1, 3))
         try:
             qvec = hstack([np_, ea, ec])
         except Exception:
             qvec = np_
 
-    sims        = cosine_similarity(qvec, tfidf_matrix).flatten()
-    res         = df.copy()
+    sims = cosine_similarity(qvec, tfidf_matrix).flatten()
+    res = df.copy()
     res['_sim'] = sims
 
     # Dupe and flanker boosting
@@ -433,7 +349,7 @@ def recommend(perfume_names=None, notes_input=None,
 
     if perfume_names:
         owned = [n.lower().strip() for n in perfume_names]
-        res   = res[~res['name'].str.lower().str.strip().isin(owned)]
+        res = res[~res['name'].str.lower().str.strip().isin(owned)]
 
     if 'feature_string' in res.columns:
         res = res[res['feature_string'].str.len().fillna(0) >= 50]
@@ -455,8 +371,8 @@ def recommend(perfume_names=None, notes_input=None,
         res['_pn'] = 0
 
     res['_score'] = 0.65 * res['_sn'] + 0.35 * res['_pn']
-    res['_rf']    = res['rating_avg'].fillna(0)
-    res['_rc']    = res['rating_count'].fillna(0)
+    res['_rf'] = res['rating_avg'].fillna(0)
+    res['_rc'] = res['rating_count'].fillna(0)
     res = res.sort_values(['_score','_rf','_rc'], ascending=False)
 
     if 'flanker_group' in res.columns:
@@ -469,19 +385,13 @@ def recommend(perfume_names=None, notes_input=None,
     return res.head(n), found
 
 def build_retailer_links(name, url, loc='KE'):
-    """
-    Builds retailer links for a perfume.
-    Includes: Fragrantica (reliable info), FragranceNet, Notino (search links)
-    """
     q = name.replace(' ', '+')
     links = []
     
-    # Always add Fragrantica link (most reliable)
     if url and str(url) not in ['nan','None','']:
         fragrantica_url = url if url.startswith('http') else f"https://www.fragrantica.com{url}"
         links.append(('📖', 'Fragrantica', fragrantica_url, 'Perfume Info'))
     
-    # International search links
     if loc == 'KE':
         links.append(('💰', 'Search: FragranceNet', 
                      f'https://www.fragrancenet.com/fragrances?q={q}', 
@@ -500,25 +410,25 @@ def build_retailer_links(name, url, loc='KE'):
     return links
 
 def render_card_html(row, loc='KE'):
-    name      = str(row.get('name', ''))
-    brand     = str(row.get('brand', ''))
-    tier      = str(row.get('price_tier', 'mid'))
-    accords   = str(row.get('accords', '') or '')
-    rating    = row.get('rating_avg')
-    rcount    = row.get('rating_count')
-    sim       = row.get('_sim', 0)
-    dupe_of   = row.get('dupe_of')
-    img_url   = row.get('image_url')
-    url       = row.get('url', '')
-    gender_v  = str(row.get('gender', '') or '').title()
+    name = str(row.get('name', ''))
+    brand = str(row.get('brand', ''))
+    tier = str(row.get('price_tier', 'mid'))
+    accords = str(row.get('accords', '') or '')
+    rating = row.get('rating_avg')
+    rcount = row.get('rating_count')
+    sim = row.get('_sim', 0)
+    dupe_of = row.get('dupe_of')
+    img_url = row.get('image_url')
+    url = row.get('url', '')
+    gender_v = str(row.get('gender', '') or '').title()
     weather_v = str(row.get('weather_label', '') or '')
     notes_raw = str(row.get('all_notes', '') or '')
 
-    tier_clr   = {'budget':'#7A8C7E','mid':'#C9A84C',
-                  'premium':'#E8C87A','luxury':'#FFD700'}.get(tier,'#C9A84C')
-    price_lbl  = PRICE_LABELS.get(tier, tier)
-    match_pct  = rescale(sim)
-    match_clr  = match_color(match_pct)
+    tier_clr = {'budget':'#7A8C7E','mid':'#C9A84C',
+                'premium':'#E8C87A','luxury':'#FFD700'}.get(tier,'#C9A84C')
+    price_lbl = PRICE_LABELS.get(tier, tier)
+    match_pct = rescale(sim)
+    match_clr = match_color(match_pct)
 
     img_tag = ''
     if img_url and str(img_url) not in ['nan','None','']:
@@ -550,7 +460,7 @@ def render_card_html(row, loc='KE'):
 
     accord_items = [a.strip() for a in accords.split(',')
                     if a.strip() and a.lower() not in ['nan','']][:4]
-    accord_line  = ' · '.join(accord_items)
+    accord_line = ' · '.join(accord_items)
 
     meta_parts = []
     if rating and not pd.isna(rating):
@@ -565,7 +475,7 @@ def render_card_html(row, loc='KE'):
     meta_line = '  ·  '.join(meta_parts)
 
     dupe_html = ''
-    dupe_str  = str(dupe_of) if dupe_of else ''
+    dupe_str = str(dupe_of) if dupe_of else ''
     if dupe_str and dupe_str not in ['nan','None','']:
         dupe_html = (
             f'<div style="color:#8B3A52;font-size:0.72rem;'
@@ -574,8 +484,8 @@ def render_card_html(row, loc='KE'):
             f'💡 Smells like {dupe_str}</div>'
         )
 
-    retailers   = build_retailer_links(name, url, loc)
-    links_html  = ''
+    retailers = build_retailer_links(name, url, loc)
+    links_html = ''
     for emoji, label, link_url, note in retailers:
         links_html += (
             f'<a href="{link_url}" target="_blank" '
@@ -613,7 +523,7 @@ def render_card_html(row, loc='KE'):
 
 def render_header():
     official = img_b64('official_logo')
-    hero     = img_b64('hero')
+    hero = img_b64('hero')
 
     hero_css = ''
     if hero:
@@ -651,7 +561,7 @@ def render_header():
         unsafe_allow_html=True
     )
 
-def render_sidebar(loc_default='KE'):
+def render_sidebar():
     with st.sidebar:
         st.markdown("""
         <div style="font-family:'Playfair Display SC',serif;
@@ -732,9 +642,9 @@ def main():
         )
 
         perfume_names = None
-        notes_input   = None
-        dupes_only    = False
-        raw           = ''
+        notes_input = None
+        dupes_only = False
+        raw = ''
 
         with tab1:
             st.markdown(
@@ -767,38 +677,33 @@ def main():
                                 sug, key=f"sg_{i}",
                                 use_container_width=True
                             ):
-                                parts     = [p.strip()
-                                             for p in raw.split(',')]
+                                parts = [p.strip()
+                                         for p in raw.split(',')]
                                 parts[-1] = sug
-                                raw       = ', '.join(parts)
+                                raw = ', '.join(parts)
 
+            # Quick vibe buttons (replaces POPULAR chips)
             st.markdown(
                 "<p style='color:#222;font-size:0.7rem;"
                 "letter-spacing:0.1em;margin:0.7rem 0 0.3rem;'>"
-                "POPULAR</p>",
+                "QUICK VIBES</p>",
                 unsafe_allow_html=True
             )
-            chips     = ["Aventus","Baccarat Rouge 540",
-                         "Black Opium","Dior Sauvage","Good Girl"]
-            chip_cols = st.columns(5)
-            for i, chip in enumerate(chips):
-                with chip_cols[i]:
-                    if st.button(chip, key=f"chip_{i}",
-                                 use_container_width=True):
-                        raw = chip
+            vibes = ["🔥 Warm & Sensual", "🌊 Fresh & Clean", "🌹 Floral & Soft", "🌲 Woody & Bold", "🍬 Sweet & Gourmand"]
+            vibe_cols = st.columns(5)
+            vibe_queries = {
+                "🔥 Warm & Sensual": "vanilla amber warm spicy musk",
+                "🌊 Fresh & Clean": "bergamot citrus aquatic fresh green",
+                "🌹 Floral & Soft": "rose jasmine peony white floral powdery",
+                "🌲 Woody & Bold": "cedar sandalwood vetiver leather smoky",
+                "🍬 Sweet & Gourmand": "vanilla caramel honey chocolate praline"
+            }
+            for i, vibe in enumerate(vibes):
+                with vibe_cols[i]:
+                    if st.button(vibe, key=f"vibe_{i}", use_container_width=True):
+                        raw = vibe_queries[vibe]
 
             if raw and raw.strip():
-                try:
-                    from deep_translator import GoogleTranslator
-                    from langdetect import detect
-                    lang = detect(raw)
-                    if lang != 'en':
-                        raw = GoogleTranslator(
-                            source=lang, target='en'
-                        ).translate(raw)
-                        st.caption(f"Translated from {lang}")
-                except Exception:
-                    pass
                 perfume_names = [
                     p.strip() for p in raw.split(',') if p.strip()
                 ]
@@ -828,17 +733,6 @@ def main():
                                  use_container_width=True):
                         raw_notes = query
             if raw_notes and raw_notes.strip():
-                try:
-                    from deep_translator import GoogleTranslator
-                    from langdetect import detect
-                    lang = detect(raw_notes)
-                    if lang != 'en':
-                        raw_notes = GoogleTranslator(
-                            source=lang, target='en'
-                        ).translate(raw_notes)
-                        st.caption(f"Translated from {lang}")
-                except Exception:
-                    pass
                 notes_input = raw_notes.strip()
 
         with tab3:
@@ -856,13 +750,13 @@ def main():
             )
             if raw_dupe and raw_dupe.strip():
                 perfume_names = [raw_dupe.strip()]
-                dupes_only    = True
+                dupes_only = True
 
         st.markdown("<div style='height:0.5rem'></div>",
                     unsafe_allow_html=True)
 
         go = st.button(
-            "Find my scent →", type="primary",
+            "Find my scent", type="primary",
             use_container_width=True, key="go_btn"
         )
 
@@ -899,10 +793,10 @@ def main():
                     )
 
                 weather_now = get_weather_now()
-                we          = SEASON_EMOJI.get(weather_now,'')
-                label       = ("Affordable alternatives"
-                               if dupes_only
-                               else "Recommended for you")
+                we = SEASON_EMOJI.get(weather_now,'')
+                label = ("Affordable alternatives"
+                         if dupes_only
+                         else "Recommended for you")
 
                 st.markdown(
                     f"<div style='display:flex;"
