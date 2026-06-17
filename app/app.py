@@ -92,6 +92,10 @@ KNOWN_BRANDS = [
     'burberry', 'carolina herrera', 'givenchy', 'guerlain',
     'valentino', 'viktor rolf', 'prada', 'boss', 'zara',
     'kayali', 'hugo boss', 'lancome', 'estee lauder',
+    # Multi-word brands
+    'parfums de marly', 'carolina herrera', 'calvin klein',
+    'tom ford', 'jean paul gaultier', 'paco rabanne',
+    'yves saint laurent', 'victoria secret', 'bath body works',
 ]
 
 VIBE_CATEGORIES = {
@@ -334,33 +338,65 @@ def avg_sparse(mat, idxs):
 
 def find_idx(name):
     nl = name.lower().strip()
+    
+    # Exact match first
     ex = df[df['name'].str.lower().str.strip() == nl]
     if len(ex):
         return ex.index[0], df.loc[ex.index[0], 'name'], 100
 
+    # Try to detect brand + perfume name pattern
     words = nl.split()
     brand_match = None
     perfume_term = nl
-    for word in words:
-        if word.lower() in KNOWN_BRANDS:
-            brand_match = word.lower()
-            perfume_term = nl.replace(word, '').strip()
-            break
-
+    
+    # Check for multi-word brands first (e.g., "Parfums de Marly")
+    brand_candidates = []
+    for i in range(len(words)):
+        for j in range(i + 1, min(i + 4, len(words) + 1)):
+            candidate = ' '.join(words[i:j])
+            if candidate in KNOWN_BRANDS:
+                brand_candidates.append((candidate, i, j))
+    
+    # Sort by length (longest brand match first)
+    brand_candidates.sort(key=lambda x: len(x[0]), reverse=True)
+    
+    if brand_candidates:
+        brand_match = brand_candidates[0][0]
+        # Remove brand from search term
+        perfume_term = nl.replace(brand_match, '').strip()
+        # Clean up extra spaces
+        perfume_term = re.sub(r'\s+', ' ', perfume_term).strip()
+    
+    # If brand detected, search within that brand first
     if brand_match:
         brand_df = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
         if len(brand_df) > 0 and perfume_term:
+            # Try exact match within brand
+            exact_in_brand = brand_df[brand_df['name'].str.lower().str.strip() == perfume_term]
+            if len(exact_in_brand) > 0:
+                idx = exact_in_brand.index[0]
+                return idx, exact_in_brand.iloc[0]['name'], 100
+            
+            # Fuzzy match within brand
             m = process.extractOne(
                 perfume_term, brand_df['name'].tolist(), scorer=fuzz.ratio
             )
             if m and m[1] >= 70:
                 idx = brand_df[brand_df['name'] == m[0]].index[0]
                 return idx, m[0], m[1]
+        elif len(brand_df) > 0:
+            # If only brand was provided, return the most popular from that brand
+            top_brand = brand_df.nlargest(1, 'popularity_score')
+            if len(top_brand) > 0:
+                idx = top_brand.index[0]
+                return idx, top_brand.iloc[0]['name'], 80
 
+    # Fallback to general fuzzy search
     m = process.extractOne(name, all_names, scorer=fuzz.ratio)
     if m and m[1] >= 70:
         idx = df[df['name'] == m[0]].index[0]
         return idx, m[0], m[1]
+    
     return None, None, 0
 
 BRAND_INDEX = {}
