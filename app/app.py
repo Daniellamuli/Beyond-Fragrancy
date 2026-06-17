@@ -839,6 +839,7 @@ def render_card_html(row, loc='KE', show_match=True):
         </div>
         """
 
+    # FIXED: Properly escape the brand name and ensure it's displayed correctly
     card = f"""
     <div style="background:#111;border:0.5px solid #1e1e1e;border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;transition:border-color 0.25s,box-shadow 0.25s,transform 0.2s;">
       {img_tag}
