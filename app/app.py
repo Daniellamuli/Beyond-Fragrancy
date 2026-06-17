@@ -144,7 +144,6 @@ def inject_css():
     
     st.markdown("""
     <style>
-    /* Search button */
     div[data-testid="stButton"] > button[kind="primary"] {
         display: block !important;
         width: 100% !important;
@@ -164,7 +163,6 @@ def inject_css():
             border-radius: 10px !important;
         }
     }
-    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         display: flex !important;
         justify-content: center !important;
@@ -180,7 +178,6 @@ def inject_css():
             font-size: 0.75rem !important;
         }
     }
-    /* Category cards */
     .category-card {
         background: #111;
         border: 0.5px solid #2a2a2a;
@@ -202,27 +199,6 @@ def inject_css():
         object-fit: cover !important;
         border-radius: 12px !important;
     }
-    /* Suggestions - limit height and scroll */
-    .suggestions-container {
-        max-height: 200px !important;
-        overflow-y: auto !important;
-        margin-bottom: 0.5rem !important;
-    }
-    .suggestion-item {
-        display: inline-block !important;
-        margin: 3px 4px !important;
-        padding: 4px 12px !important;
-        background: #1a1a1a !important;
-        border: 0.5px solid #2a2a2a !important;
-        border-radius: 20px !important;
-        font-size: 0.75rem !important;
-        color: #888 !important;
-        cursor: pointer !important;
-    }
-    .suggestion-item:hover {
-        border-color: #C9A84C !important;
-        color: #C9A84C !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -238,15 +214,40 @@ def load_models():
     models_dir = MODS
 
     with st.spinner("Loading Beyond Fragrancy..."):
-        df_path = os.path.join(models_dir, 'df_app.csv')
+        # Try loading smaller file first (memory efficient)
+        df_path = os.path.join(models_dir, 'df_app_small.csv')
+        if not os.path.exists(df_path):
+            df_path = os.path.join(models_dir, 'df_app.csv')
         
         if not os.path.exists(df_path):
-            raise FileNotFoundError(f"df_app.csv not found at {df_path}")
+            raise FileNotFoundError(f"Data file not found at {df_path}")
         
-        df = pd.read_csv(df_path, low_memory=False)
+        # Load only columns needed for the app (memory efficient)
+        needed_columns = [
+            'name', 'brand', 'year', 'gender', 'top_notes', 'middle_notes', 
+            'base_notes', 'all_notes', 'accords', 'rating_avg', 'rating_count', 
+            'longevity_avg', 'sillage_avg', 'price_tier', 'season_winter',
+            'season_spring', 'season_summer', 'season_autumn', 'description',
+            'parent_perfume', 'flanker_type', 'flanker_group', 'is_flanker',
+            'dupe_of', 'image_url', 'perfumers', 'similar_perfumes',
+            'olfactive_family', 'best_season', 'occasion_tags',
+            'popularity_score', 'feature_string', 'url'
+        ]
+        
+        # Try to load only needed columns
+        try:
+            df = pd.read_csv(df_path, low_memory=False, usecols=needed_columns)
+        except ValueError:
+            # If some columns don't exist, load all and filter
+            df = pd.read_csv(df_path, low_memory=False)
+            # Keep only columns that exist
+            existing_cols = [c for c in needed_columns if c in df.columns]
+            df = df[existing_cols]
+        
         df = df.reset_index(drop=True)
         print(f"Loaded {len(df):,} perfumes from {df_path}")
         
+        # Load TF-IDF matrix
         tfidf_path = os.path.join(models_dir, 'tfidf_matrix_checkpoint.npz')
         tfidf = None
         if os.path.exists(tfidf_path):
@@ -256,6 +257,7 @@ def load_models():
             except Exception as e:
                 print(f"Could not load TF-IDF: {e}")
         
+        # Rebuild vectorizers from JSON
         def rebuild_vec(path):
             with open(path) as f:
                 d = json.load(f)
@@ -342,7 +344,6 @@ def build_brand_index():
                 BRAND_INDEX[brand_lower] = df[df['brand'].str.lower() == brand_lower]['name'].tolist()
 
 def get_flanker_suggestions(query, n=6):
-    """Returns suggestions as clickable chips for better mobile UX"""
     build_brand_index()
     last = query.split(',')[-1].strip()
     if len(last) < 3:
@@ -458,7 +459,6 @@ def render_category_page(category_name):
     </div>
     """, unsafe_allow_html=True)
     
-    # Smaller category image
     img_b64_ = img_b64(category_data['image'])
     if img_b64_:
         st.markdown(f"""
@@ -593,24 +593,40 @@ def build_retailer_links(name, url, loc='KE'):
     q = name.replace(' ', '+')
     links = []
     
+    # Fragrantica (always reliable for info)
     if url and str(url) not in ['nan','None','']:
         fragrantica_url = url if url.startswith('http') else f"https://www.fragrantica.com{url}"
         links.append(('📖', 'Fragrantica', fragrantica_url, 'Perfume Info'))
     
     if loc == 'KE':
-        links.append(('💰', 'Search: FragranceNet', 
-                     f'https://www.fragrancenet.com/fragrances?q={q}', 
-                     'Search manually'))
-        links.append(('🌍', 'Search: Notino', 
+        # Kenyan stores first (local priority)
+        links.append(('🛍️', 'Perfume Plug KE', 
+                     f'https://perfumeplugkenya.com/?s={q}', 
+                     'Kenya · Local'))
+        links.append(('💄', 'Lintons Beauty', 
+                     f'https://www.lintonsbeauty.com/?s={q}', 
+                     'Kenya · Local'))
+        # International stores that ship to Kenya
+        links.append(('🌍', 'Notino', 
                      f'https://www.notino.co.uk/search/?q={q}', 
-                     'Search manually'))
+                     'Int\'l · Ships KE'))
+        links.append(('💰', 'FragranceNet', 
+                     f'https://www.fragrancenet.com/fragrances?q={q}', 
+                     'Int\'l · Discounted'))
     else:
-        links.append(('💰', 'Search: FragranceNet', 
-                     f'https://www.fragrancenet.com/fragrances?q={q}', 
-                     'Search manually'))
-        links.append(('🌍', 'Search: Notino', 
+        # International stores only
+        links.append(('🌍', 'Notino', 
                      f'https://www.notino.co.uk/search/?q={q}', 
-                     'Search manually'))
+                     'UK / Europe'))
+        links.append(('💰', 'FragranceNet', 
+                     f'https://www.fragrancenet.com/fragrances?q={q}', 
+                     'USA · Discounted'))
+        links.append(('🎁', 'The Perfume Shop', 
+                     f'https://www.theperfumeshop.com/search?text={q}', 
+                     'UK'))
+        links.append(('✨', 'Sephora', 
+                     f'https://www.sephora.com/search?keyword={q}', 
+                     'USA/EU/UK'))
     
     return links
 
@@ -637,7 +653,6 @@ def render_card_html(row, loc='KE', show_match=True):
 
     img_tag = ''
     if img_url and str(img_url) not in ['nan','None','']:
-        # Fix: Use the actual image URL directly, no broken link
         img_tag = (
             f'<img src="{img_url}" '
             f'style="width:100%;height:140px;object-fit:contain;'
@@ -752,7 +767,7 @@ def render_header():
     if official:
         img_part = (
             f"<img src='{official}' "
-            f"style='max-width:460px;width:80%;"
+            f"style='max-width:800px;width:95%;"
             f"display:block;margin:0 auto;' />"
         )
     else:
@@ -827,7 +842,7 @@ def main():
     if not MODEL_OK:
         st.error(f"Model loading failed: {MODEL_ERR}")
         st.info(
-            "Ensure df_app.csv, tfidf_matrix_checkpoint.npz, "
+            "Ensure df_app.csv or df_app_small.csv, tfidf_matrix_checkpoint.npz, "
             "notes_vocab.json, accords_vocab.json, "
             "context_vocab.json are in the models/ folder. "
             "These files should have been uploaded via Git LFS."
@@ -885,18 +900,13 @@ def main():
                         "Did you mean:</p>",
                         unsafe_allow_html=True
                     )
-                    # Display suggestions as compact chips
-                    chip_html = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.5rem;">'
                     for sug in sugs:
-                        img_preview = get_perfume_image(sug)
-                        # Use a button for each suggestion
                         if st.button(sug, key=f"sug_{sug}", use_container_width=False):
                             parts = [p.strip() for p in raw.split(',')]
                             parts[-1] = sug
                             raw = ', '.join(parts)
                             st.session_state['suggestion_clicked'] = True
                             st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
 
             if raw and raw.strip():
                 perfume_names = [p.strip() for p in raw.split(',') if p.strip()]
@@ -953,8 +963,7 @@ def main():
 
         if go or st.session_state.get('suggestion_clicked', False):
             if perfume_names or notes_input:
-                # Show spinner while searching
-                with st.spinner("We did the sniffing so you don't have to..."):
+                with st.spinner("🔍 We did the sniffing so you don't have to..."):
                     results, found = recommend(
                         perfume_names=perfume_names,
                         notes_input=notes_input,
