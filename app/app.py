@@ -95,29 +95,29 @@ KNOWN_BRANDS = [
 
 VIBE_CATEGORIES = {
     "🔥 Warm & Sensual": {
-        "keywords": ["vanilla", "amber", "warm", "spicy", "musk", "oriental"],
+        "keywords": ["amber", "musk", "incense", "cardamom", "cinnamon", "clove", "saffron", "oud", "leather", "smoky", "resin", "labdanum", "styrax"],
         "image": "scent_oriental.png",
         "description": "Rich, seductive, and deeply inviting"
     },
+    "🍬 Sweet & Gourmand": {
+        "keywords": ["vanilla", "caramel", "honey", "chocolate", "praline", "toffee", "marshmallow", "sugar", "whiskey", "rum", "malt", "coffee", "cacao"],
+        "image": "scent_gourmand.png",
+        "description": "Delicious, comforting, and irresistibly sweet"
+    },
     "🌊 Fresh & Clean": {
-        "keywords": ["bergamot", "citrus", "aquatic", "green", "fresh", "marine"],
+        "keywords": ["bergamot", "lemon", "grapefruit", "aquatic", "marine", "green", "mint", "basil", "neroli", "citron", "ozonic"],
         "image": "scent_fresh.png",
         "description": "Crisp, energetic, and effortlessly clean"
     },
-    "🌹 Floral & Soft": {
-        "keywords": ["rose", "jasmine", "peony", "white floral", "floral", "powdery"],
-        "image": "scent_floral.png",
-        "description": "Delicate, feminine, and beautifully soft"
-    },
     "🌲 Woody & Bold": {
-        "keywords": ["cedar", "sandalwood", "vetiver", "leather", "woody", "smoky"],
+        "keywords": ["cedar", "sandalwood", "vetiver", "leather", "oakmoss", "pine", "mahogany", "guaiac", "smoky", "earthy", "resinous"],
         "image": "scent_woody.png",
         "description": "Strong, grounded, and confidently masculine"
     },
-    "🍬 Sweet & Gourmand": {
-        "keywords": ["vanilla", "caramel", "honey", "chocolate", "sweet", "praline"],
-        "image": "scent_gourmand.png",
-        "description": "Delicious, comforting, and irresistibly sweet"
+    "🌹 Floral & Soft": {
+        "keywords": ["rose", "jasmine", "peony", "tuberose", "magnolia", "lily", "violet", "freesia", "gardenia", "ylang-ylang", "mimosa", "powdery", "delicate"],
+        "image": "scent_floral.png",
+        "description": "Delicate, feminine, and beautifully soft"
     }
 }
 
@@ -144,6 +144,7 @@ def inject_css():
     
     st.markdown("""
     <style>
+    /* Search button */
     div[data-testid="stButton"] > button[kind="primary"] {
         display: block !important;
         width: 100% !important;
@@ -163,6 +164,7 @@ def inject_css():
             border-radius: 10px !important;
         }
     }
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         display: flex !important;
         justify-content: center !important;
@@ -178,6 +180,7 @@ def inject_css():
             font-size: 0.75rem !important;
         }
     }
+    /* Category cards */
     .category-card {
         background: #111;
         border: 0.5px solid #2a2a2a;
@@ -193,17 +196,32 @@ def inject_css():
         transform: translateY(-3px);
         box-shadow: 0 4px 20px rgba(201,168,76,0.1);
     }
-    /* Category page image - smaller on laptop, responsive */
     .category-hero {
-        max-height: 200px !important;
+        max-height: 120px !important;
         width: 100% !important;
         object-fit: cover !important;
         border-radius: 12px !important;
     }
-    @media (max-width: 768px) {
-        .category-hero {
-            max-height: 120px !important;
-        }
+    /* Suggestions - limit height and scroll */
+    .suggestions-container {
+        max-height: 200px !important;
+        overflow-y: auto !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .suggestion-item {
+        display: inline-block !important;
+        margin: 3px 4px !important;
+        padding: 4px 12px !important;
+        background: #1a1a1a !important;
+        border: 0.5px solid #2a2a2a !important;
+        border-radius: 20px !important;
+        font-size: 0.75rem !important;
+        color: #888 !important;
+        cursor: pointer !important;
+    }
+    .suggestion-item:hover {
+        border-color: #C9A84C !important;
+        color: #C9A84C !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -323,7 +341,8 @@ def build_brand_index():
                 brand_lower = str(brand).lower()
                 BRAND_INDEX[brand_lower] = df[df['brand'].str.lower() == brand_lower]['name'].tolist()
 
-def get_flanker_suggestions(query, n=4):
+def get_flanker_suggestions(query, n=6):
+    """Returns suggestions as clickable chips for better mobile UX"""
     build_brand_index()
     last = query.split(',')[-1].strip()
     if len(last) < 3:
@@ -439,14 +458,13 @@ def render_category_page(category_name):
     </div>
     """, unsafe_allow_html=True)
     
-    # Category image with smaller height on laptop
+    # Smaller category image
     img_b64_ = img_b64(category_data['image'])
     if img_b64_:
         st.markdown(f"""
-        <img src="{img_b64_}" class="category-hero" style="max-height:200px;width:100%;object-fit:cover;border-radius:12px;"/>
+        <img src="{img_b64_}" class="category-hero" style="max-height:120px;width:100%;object-fit:cover;border-radius:12px;"/>
         """, unsafe_allow_html=True)
     
-    # Initialize session state for load more
     if 'category_limit' not in st.session_state:
         st.session_state['category_limit'] = 12
     
@@ -470,7 +488,6 @@ def render_category_page(category_name):
         with cols[idx % 3]:
             st.markdown(render_card_html(row, 'KE', show_match=False), unsafe_allow_html=True)
     
-    # Load More button
     if len(category_perfumes_all) >= st.session_state['category_limit']:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -480,7 +497,7 @@ def render_category_page(category_name):
     
     if st.button("← Back to All Categories", use_container_width=True):
         st.session_state['selected_category'] = None
-        st.session_state['category_limit'] = 12  # Reset limit
+        st.session_state['category_limit'] = 12
         st.rerun()
 
 def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
@@ -558,7 +575,6 @@ def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
     else:
         res['_pn'] = 0
 
-    # 65% similarity + 35% popularity (well-loved perfumes get a boost)
     res['_score'] = 0.65 * res['_sn'] + 0.35 * res['_pn']
     res['_rf'] = res['rating_avg'].fillna(0)
     res['_rc'] = res['rating_count'].fillna(0)
@@ -621,12 +637,12 @@ def render_card_html(row, loc='KE', show_match=True):
 
     img_tag = ''
     if img_url and str(img_url) not in ['nan','None','']:
+        # Fix: Use the actual image URL directly, no broken link
         img_tag = (
             f'<img src="{img_url}" '
             f'style="width:100%;height:140px;object-fit:contain;'
             f'background:#161616;border-radius:8px;padding:8px;'
-            f'margin-bottom:0.7rem;" '
-            f'onerror="this.style.display=\'none\'" />'
+            f'margin-bottom:0.7rem;" />'
         )
 
     note_items = []
@@ -861,7 +877,7 @@ def main():
             )
 
             if raw and len(raw.split(',')[-1].strip()) >= 3:
-                sugs = get_flanker_suggestions(raw, 4)
+                sugs = get_flanker_suggestions(raw, 6)
                 if sugs:
                     st.markdown(
                         "<p style='color:#333;font-size:0.72rem;"
@@ -869,21 +885,18 @@ def main():
                         "Did you mean:</p>",
                         unsafe_allow_html=True
                     )
-                    sug_cols = st.columns(min(len(sugs), 4))
-                    for i, sug in enumerate(sugs):
+                    # Display suggestions as compact chips
+                    chip_html = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.5rem;">'
+                    for sug in sugs:
                         img_preview = get_perfume_image(sug)
-                        with sug_cols[i]:
-                            if img_preview:
-                                st.image(img_preview, width=55)
-                            if st.button(
-                                sug, key=f"sg_{i}",
-                                use_container_width=True
-                            ):
-                                parts = [p.strip() for p in raw.split(',')]
-                                parts[-1] = sug
-                                raw = ', '.join(parts)
-                                st.session_state['suggestion_clicked'] = True
-                                st.rerun()
+                        # Use a button for each suggestion
+                        if st.button(sug, key=f"sug_{sug}", use_container_width=False):
+                            parts = [p.strip() for p in raw.split(',')]
+                            parts[-1] = sug
+                            raw = ', '.join(parts)
+                            st.session_state['suggestion_clicked'] = True
+                            st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
 
             if raw and raw.strip():
                 perfume_names = [p.strip() for p in raw.split(',') if p.strip()]
@@ -940,6 +953,7 @@ def main():
 
         if go or st.session_state.get('suggestion_clicked', False):
             if perfume_names or notes_input:
+                # Show spinner while searching
                 with st.spinner("We did the sniffing so you don't have to..."):
                     results, found = recommend(
                         perfume_names=perfume_names,
