@@ -91,9 +91,9 @@ KNOWN_BRANDS = [
     'lattafa', 'armaf', 'afnan', 'al haramain', 'rasasi',
     'burberry', 'carolina herrera', 'givenchy', 'guerlain',
     'valentino', 'viktor rolf', 'prada', 'boss', 'zara',
+    'kayali', 'hugo boss', 'ysl', 'lancome', 'estee lauder',
 ]
 
-# FIXED: More specific keywords with reduced overlap
 VIBE_CATEGORIES = {
     "🍬 Sweet & Gourmand": {
         "keywords": ["vanilla", "caramel", "honey", "chocolate", "praline", "toffee", "marshmallow", "sugar", "whiskey", "rum", "malt", "coffee", "cacao", "candy", "gourmand", "brown sugar", "syrup", "butter", "cream"],
@@ -199,6 +199,49 @@ def inject_css():
         width: 100% !important;
         object-fit: cover !important;
         border-radius: 12px !important;
+    }
+    /* Suggestion with image styling */
+    .suggestion-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #111;
+        border: 0.5px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+        min-height: 100px;
+    }
+    .suggestion-container:hover {
+        border-color: #C9A84C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(201,168,76,0.1);
+    }
+    .suggestion-image {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #161616;
+        padding: 4px;
+    }
+    .suggestion-name {
+        color: #F5F0E8;
+        font-size: 0.65rem;
+        text-align: center;
+        margin-top: 0.3rem;
+        line-height: 1.2;
+        max-height: 2.4rem;
+        overflow: hidden;
+        font-family: 'DM Sans', sans-serif;
+    }
+    .suggestion-brand {
+        color: #555;
+        font-size: 0.55rem;
+        text-align: center;
+        font-family: 'DM Sans', sans-serif;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -318,14 +361,49 @@ def avg_sparse(mat, idxs):
     return sp.csr_matrix(np.asarray(stacked.mean(axis=0)))
 
 def find_idx(name):
+    """Brand-aware fuzzy matching - prioritizes matches from the same brand"""
     nl = name.lower().strip()
+    
+    # Exact match first
     ex = df[df['name'].str.lower().str.strip() == nl]
     if len(ex):
         return ex.index[0], df.loc[ex.index[0], 'name'], 100
+    
+    # Try to detect brand + perfume name pattern
+    words = nl.split()
+    brand_match = None
+    perfume_term = nl
+    
+    for word in words:
+        if word.lower() in KNOWN_BRANDS:
+            brand_match = word.lower()
+            # Remove brand from search term
+            perfume_term = nl.replace(word, '').strip()
+            break
+    
+    # If brand detected, search within that brand first
+    if brand_match:
+        brand_perfumes = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
+        if len(brand_perfumes) > 0:
+            # Try to match the perfume name within the brand
+            if perfume_term:
+                m = process.extractOne(perfume_term, brand_perfumes['name'].tolist(), scorer=fuzz.ratio)
+                if m and m[1] >= 70:
+                    idx = brand_perfumes[brand_perfumes['name'] == m[0]].index[0]
+                    return idx, m[0], m[1]
+            # If no specific perfume term, suggest the most popular from that brand
+            else:
+                top_brand = brand_perfumes.nlargest(1, 'popularity_score')
+                if len(top_brand) > 0:
+                    idx = top_brand.index[0]
+                    return idx, top_brand.iloc[0]['name'], 80
+    
+    # Fallback to general fuzzy search
     m = process.extractOne(name, all_names, scorer=fuzz.ratio)
     if m and m[1] >= 70:
         idx = df[df['name'] == m[0]].index[0]
         return idx, m[0], m[1]
+    
     return None, None, 0
 
 BRAND_INDEX = {}
@@ -393,6 +471,16 @@ def get_flanker_suggestions(query, n=6):
     return get_flanker_suggestions_cached(query, n)
 
 def get_perfume_image(name):
+    row = df[df['name'].str.lower() == name.lower()]
+    if len(row) == 0:
+        return None
+    img = row.iloc[0].get('image_url')
+    if pd.notna(img) and str(img) not in ['nan','None','']:
+        return str(img)
+    return None
+
+def get_perfume_image_by_name(name):
+    """Get perfume image URL by exact name match"""
     row = df[df['name'].str.lower() == name.lower()]
     if len(row) == 0:
         return None
@@ -727,10 +815,11 @@ def render_card_html(row, loc='KE', show_match=True):
             f'💡 Smells like {dupe_str}</div>'
         )
 
+    # Build retailer links - properly creating clickable links
     retailers = build_retailer_links(name, url, loc)
-    links_html = ''
+    links_html_parts = []
     for emoji, label, link_url, note in retailers:
-        links_html += (
+        links_html_parts.append(
             f'<a href="{link_url}" target="_blank" '
             f'style="display:inline-block;margin:3px 4px 3px 0;'
             f'text-decoration:none;color:#C9A84C;font-size:0.72rem;'
@@ -738,6 +827,7 @@ def render_card_html(row, loc='KE', show_match=True):
             f'padding:3px 8px;">'
             f'{emoji} {label}</a>'
         )
+    links_html = ''.join(links_html_parts)
 
     match_html = ""
     if show_match:
@@ -755,7 +845,7 @@ def render_card_html(row, loc='KE', show_match=True):
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Playfair Display SC',serif;color:#F5F0E8;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</div>
-          <div style="color:#444;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div>
+          <div style="color:#666;font-size:0.78rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{brand}</div>
         </div>
         {match_html}
       </div>
@@ -921,13 +1011,32 @@ def main():
                         "Did you mean:</p>",
                         unsafe_allow_html=True
                     )
-                    for sug in sugs:
-                        if st.button(sug, key=f"sug_{sug}", use_container_width=False):
-                            parts = [p.strip() for p in raw.split(',')]
-                            parts[-1] = sug
-                            raw = ', '.join(parts)
-                            st.session_state['suggestion_clicked'] = True
-                            st.rerun()
+                    # Display suggestions with images
+                    sug_cols = st.columns(min(len(sugs), 6))
+                    for i, sug in enumerate(sugs):
+                        with sug_cols[i]:
+                            img_url = get_perfume_image_by_name(sug)
+                            # Create styled suggestion card
+                            img_html = ""
+                            if img_url:
+                                img_html = f'<img src="{img_url}" class="suggestion-image"/>'
+                            else:
+                                # Fallback image
+                                img_html = f'<div style="width:60px;height:60px;background:#1a1a1a;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#333;font-size:0.5rem;margin:0 auto;">📷</div>'
+                            
+                            st.markdown(f"""
+                            <div class="suggestion-container">
+                                {img_html}
+                                <div class="suggestion-name">{sug}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            if st.button(f"Select", key=f"sug_{sug}", use_container_width=True):
+                                parts = [p.strip() for p in raw.split(',')]
+                                parts[-1] = sug
+                                raw = ', '.join(parts)
+                                st.session_state['suggestion_clicked'] = True
+                                st.rerun()
 
             if raw and raw.strip():
                 perfume_names = [p.strip() for p in raw.split(',') if p.strip()]
@@ -982,6 +1091,7 @@ def main():
             use_container_width=True, key="go_btn"
         )
 
+        # FIXED: Check if a suggestion was clicked to auto-search with spinner
         if go or st.session_state.get('suggestion_clicked', False):
             if perfume_names or notes_input:
                 with st.spinner("🔍 We did the sniffing so you don't have to..."):
@@ -992,6 +1102,7 @@ def main():
                         dupes_only=dupes_only
                     )
 
+                # Reset suggestion flag after search
                 if st.session_state.get('suggestion_clicked', False):
                     st.session_state['suggestion_clicked'] = False
 
