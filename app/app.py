@@ -210,20 +210,19 @@ def load_models():
         np._core = np.core
     
     models_dir = MODS
-    data_dir = os.path.join(BASE, '..', 'data')
 
     with st.spinner("Loading Beyond Fragrancy..."):
+        # ONLY load from models/df_app.csv (not data/)
         df_path = os.path.join(models_dir, 'df_app.csv')
-        if not os.path.exists(df_path):
-            df_path = os.path.join(data_dir, 'master_dataset.csv')
         
         if not os.path.exists(df_path):
-            raise FileNotFoundError(f"Data file not found at {df_path}")
+            raise FileNotFoundError(f"df_app.csv not found at {df_path}")
         
         df = pd.read_csv(df_path, low_memory=False)
         df = df.reset_index(drop=True)
         print(f"Loaded {len(df):,} perfumes from {df_path}")
         
+        # Load TF-IDF matrix
         tfidf_path = os.path.join(models_dir, 'tfidf_matrix_checkpoint.npz')
         tfidf = None
         if os.path.exists(tfidf_path):
@@ -233,6 +232,7 @@ def load_models():
             except Exception as e:
                 print(f"Could not load TF-IDF: {e}")
         
+        # Rebuild vectorizers from JSON
         def rebuild_vec(path):
             with open(path) as f:
                 d = json.load(f)
@@ -782,7 +782,8 @@ def main():
         st.info(
             "Ensure df_app.csv, tfidf_matrix_checkpoint.npz, "
             "notes_vocab.json, accords_vocab.json, "
-            "context_vocab.json are in the models/ folder."
+            "context_vocab.json are in the models/ folder. "
+            "These files should have been uploaded via Git LFS."
         )
         return
 
