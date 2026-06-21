@@ -1009,10 +1009,10 @@ def main():
         )
 
         # shared state
-        perfume_names = None
-        notes_input   = None
-        dupes_only    = False
-        submitted     = False   # set True by whichever tab's button is clicked
+        perfume_names  = None
+        notes_input    = None
+        dupes_only     = False
+        any_search_ran = False  # tracks whether ANY tab rendered results this run
 
         # ── TAB 1: By perfume name ─────────────────────────────────────
         with tab1:
@@ -1093,9 +1093,23 @@ def main():
                 perfume_names = [p.strip() for p in raw.split(',')
                                  if p.strip()]
 
-            if pf_go:
-                submitted  = True
-                dupes_only = False
+            tab1_trigger = pf_go or (
+                st.session_state.get('trigger_search', False)
+                and st.session_state.get('trigger_source') == 'perfume'
+            )
+
+            if tab1_trigger:
+                if st.session_state.get('trigger_search', False):
+                    perfume_names = [st.session_state.get('trigger_value', '')]
+                    st.session_state['trigger_search'] = False
+                    st.session_state['trigger_source']  = None
+                    st.session_state['trigger_value']   = None
+
+                if perfume_names:
+                    run_search(perfume_names, None, n_res, False, loc)
+                    any_search_ran = True
+                else:
+                    st.warning("Please enter a perfume name.")
 
         # ── TAB 2: By notes — no vibe buttons ─────────────────────────
         with tab2:
@@ -1121,8 +1135,11 @@ def main():
                 notes_input = raw_notes.strip()
 
             if nt_go:
-                submitted  = True
-                dupes_only = False
+                if notes_input:
+                    run_search(None, notes_input, n_res, False, loc)
+                    any_search_ran = True
+                else:
+                    st.warning("Please describe the scent you're looking for.")
 
         # ── TAB 3: Find a dupe ─────────────────────────────────────────
         with tab3:
@@ -1149,35 +1166,14 @@ def main():
                 dupes_only    = True
 
             if dp_go:
-                submitted = True
-                # perfume_names / dupes_only already set above from raw_dupe
+                if perfume_names:
+                    run_search(perfume_names, None, n_res, dupes_only, loc)
+                    any_search_ran = True
+                else:
+                    st.warning("Please enter a perfume name.")
 
-        # ── Trigger search from a tab button OR a suggestion click ─────
-        trigger = submitted or st.session_state.get('trigger_search', False)
-
-        if trigger:
-            # If triggered by a "Did you mean" suggestion click, resolve
-            # which tab it came from so we don't clobber dupes_only or
-            # search the wrong field. Use trigger_value (captured at the
-            # moment the suggestion was clicked) rather than re-reading
-            # the text_input's widget state, which may not have updated
-            # to the new value yet on this rerun.
-            if st.session_state.get('trigger_search', False):
-                source = st.session_state.get('trigger_source', 'perfume')
-                if source == 'perfume':
-                    perfume_names = [st.session_state.get('trigger_value', '')]
-                    dupes_only    = False
-                st.session_state['trigger_search'] = False
-                st.session_state['trigger_source']  = None
-                st.session_state['trigger_value']   = None
-
-            if perfume_names or notes_input:
-                run_search(perfume_names, notes_input, n_res, dupes_only, loc)
-            else:
-                st.warning("Please enter a perfume name or describe your scent.")
-
-    # scent explorer shown below when not in search mode
-    if not trigger:
+    # scent explorer shown below when no tab just rendered search results
+    if not any_search_ran:
         st.markdown("<div style='height:1rem;'></div>",
                     unsafe_allow_html=True)
         render_scent_explorer()
