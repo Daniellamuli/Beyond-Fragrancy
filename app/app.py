@@ -832,10 +832,10 @@ def render_scent_explorer():
          VIBE_CATEGORIES["🍬 Sweet & Gourmand"]["description"]),
         ("🔥 Warm & Sensual",  "scent_oriental.png",
          VIBE_CATEGORIES["🔥 Warm & Sensual"]["description"]),
-        ("🌲 Woody & Bold",    "scent_woody.png",
-         VIBE_CATEGORIES["🌲 Woody & Bold"]["description"]),
         ("🌹 Floral & Soft",   "scent_floral.png",
          VIBE_CATEGORIES["🌹 Floral & Soft"]["description"]),
+        ("🌲 Woody & Bold",    "scent_woody.png",
+         VIBE_CATEGORIES["🌲 Woody & Bold"]["description"]),
         ("🌊 Fresh & Clean",   "scent_fresh.png",
          VIBE_CATEGORIES["🌊 Fresh & Clean"]["description"]),
     ]
@@ -864,6 +864,13 @@ def render_category_page(category_name):
     cat = VIBE_CATEGORIES.get(category_name)
     if not cat:
         return
+
+    top_back_col, _ = st.columns([1, 4])
+    with top_back_col:
+        if st.button("← Back", use_container_width=True, key="back_top"):
+            st.session_state['selected_category'] = None
+            st.session_state['category_limit']    = 12
+            st.rerun()
 
     st.markdown(
         f"<div style='text-align:center;padding:0.5rem 0;'>"
@@ -916,7 +923,7 @@ def render_category_page(category_name):
                     st.session_state['category_limit'] += 12
                     st.rerun()
 
-    if st.button("← Back to Categories", use_container_width=True):
+    if st.button("← Back to Categories", use_container_width=True, key="back_bottom"):
         st.session_state['selected_category'] = None
         st.session_state['category_limit']    = 12
         st.rerun()
