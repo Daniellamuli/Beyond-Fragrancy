@@ -316,6 +316,37 @@ except Exception as e:
     MODEL_ERR = str(e)
     all_names = []
 
+# ── Precomputed lookup structures (built once, not per-keystroke) ──────────
+# These used to be recomputed with .str.contains()/.str.lower() scans
+# inside find_idx() and get_flanker_suggestions_cached() on every call,
+# which is what made name search slow. Building them once at startup
+# turns those repeated O(n) string scans into O(1) dict lookups.
+if MODEL_OK:
+    df['_name_lower']  = df['name'].astype(str).str.lower().str.strip()
+    df['_brand_lower'] = df['brand'].astype(str).str.lower().str.strip()
+
+    # exact name -> first matching index
+    NAME_TO_IDX = {}
+    for _idx, _nl in zip(df.index, df['_name_lower']):
+        if _nl not in NAME_TO_IDX:
+            NAME_TO_IDX[_nl] = _idx
+
+    # brand (lowercase) -> list of row indices, for fast brand scoping
+    BRAND_TO_INDICES = {}
+    for _idx, _bl in zip(df.index, df['_brand_lower']):
+        BRAND_TO_INDICES.setdefault(_bl, []).append(_idx)
+
+    # brand substring -> list of row indices (replaces .str.contains scans)
+    # only needed for partial/substring brand matches
+    def _brand_contains_indices(substr):
+        return [idx for bl, idxs in BRAND_TO_INDICES.items()
+                if substr in bl for idx in idxs]
+else:
+    NAME_TO_IDX = {}
+    BRAND_TO_INDICES = {}
+    def _brand_contains_indices(substr):
+        return []
+
 def get_weather_now():
     m   = date.today().month
     raw = ('Summer' if m in [6,7,8] else
@@ -338,17 +369,17 @@ def avg_sparse(mat, idxs):
 
 def find_idx(name):
     nl = name.lower().strip()
-    
-    # Exact match first
-    ex = df[df['name'].str.lower().str.strip() == nl]
-    if len(ex):
-        return ex.index[0], df.loc[ex.index[0], 'name'], 100
+
+    # Exact match first — O(1) dict lookup instead of a full-column scan
+    direct = NAME_TO_IDX.get(nl)
+    if direct is not None:
+        return direct, df.loc[direct, 'name'], 100
 
     # Try to detect brand + perfume name pattern
     words = nl.split()
     brand_match = None
     perfume_term = nl
-    
+
     # Check for multi-word brands first (e.g., "Parfums de Marly")
     brand_candidates = []
     for i in range(len(words)):
@@ -356,37 +387,40 @@ def find_idx(name):
             candidate = ' '.join(words[i:j])
             if candidate in KNOWN_BRANDS:
                 brand_candidates.append((candidate, i, j))
-    
+
     # Sort by length (longest brand match first)
     brand_candidates.sort(key=lambda x: len(x[0]), reverse=True)
-    
+
     if brand_candidates:
         brand_match = brand_candidates[0][0]
         # Remove brand from search term
         perfume_term = nl.replace(brand_match, '').strip()
         # Clean up extra spaces
         perfume_term = re.sub(r'\s+', ' ', perfume_term).strip()
-    
+
     # If brand detected, search within that brand first
     if brand_match:
-        brand_df = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
-        if len(brand_df) > 0 and perfume_term:
+        brand_idxs = _brand_contains_indices(brand_match)
+        if brand_idxs and perfume_term:
             # Try exact match within brand
-            exact_in_brand = brand_df[brand_df['name'].str.lower().str.strip() == perfume_term]
-            if len(exact_in_brand) > 0:
-                idx = exact_in_brand.index[0]
-                return idx, exact_in_brand.iloc[0]['name'], 100
-            
+            for idx in brand_idxs:
+                if df.at[idx, '_name_lower'] == perfume_term:
+                    return idx, df.at[idx, 'name'], 100
+
             # Fuzzy match within brand
+            brand_names = df.loc[brand_idxs, 'name'].tolist()
             m = process.extractOne(
-                perfume_term, brand_df['name'].tolist(), scorer=fuzz.ratio
+                perfume_term, brand_names, scorer=fuzz.ratio
             )
             if m and m[1] >= 70:
-                idx = brand_df[brand_df['name'] == m[0]].index[0]
-                return idx, m[0], m[1]
-        elif len(brand_df) > 0:
+                matched_name = m[0]
+                idx = next(i for i in brand_idxs
+                           if df.at[i, 'name'] == matched_name)
+                return idx, matched_name, m[1]
+        elif brand_idxs:
             # If only brand was provided, return the most popular from that brand
-            top_brand = brand_df.nlargest(1, 'popularity_score')
+            brand_sub = df.loc[brand_idxs]
+            top_brand = brand_sub.nlargest(1, 'popularity_score')
             if len(top_brand) > 0:
                 idx = top_brand.index[0]
                 return idx, top_brand.iloc[0]['name'], 80
@@ -394,20 +428,24 @@ def find_idx(name):
     # Fallback to general fuzzy search
     m = process.extractOne(name, all_names, scorer=fuzz.ratio)
     if m and m[1] >= 70:
-        idx = df[df['name'] == m[0]].index[0]
+        idx = NAME_TO_IDX.get(m[0].lower().strip())
+        if idx is None:
+            idx = df[df['name'] == m[0]].index[0]
         return idx, m[0], m[1]
-    
+
     return None, None, 0
 
 BRAND_INDEX = {}
 
 def build_brand_index():
+    """Kept for compatibility — BRAND_INDEX is now just a thin view over
+    the BRAND_TO_INDICES dict built once at startup, so this is O(1)
+    instead of re-scanning the whole dataframe."""
     global BRAND_INDEX
-    if not BRAND_INDEX:
-        for brand in df['brand'].unique():
-            if pd.notna(brand):
-                bl = str(brand).lower()
-                BRAND_INDEX[bl] = df[df['brand'].str.lower() == bl]['name'].tolist()
+    if not BRAND_INDEX and MODEL_OK:
+        for bl, idxs in BRAND_TO_INDICES.items():
+            if bl and bl not in ('nan', 'none', ''):
+                BRAND_INDEX[bl] = df.loc[idxs, 'name'].tolist()
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_flanker_suggestions_cached(query, n=6):
@@ -416,26 +454,31 @@ def get_flanker_suggestions_cached(query, n=6):
     if len(last) < 3:
         return []
 
+    last_lower = last.lower()
     brand_match = None
-    for word in last.split():
-        if word.lower() in KNOWN_BRANDS:
-            brand_match = word.lower()
+    for word in last_lower.split():
+        if word in KNOWN_BRANDS:
+            brand_match = word
             break
 
     if brand_match and brand_match in BRAND_INDEX:
         pool = BRAND_INDEX[brand_match][:100]
     else:
         pool = (
-            df.nlargest(2000, 'popularity_score')['name'].tolist()
-            if 'popularity_score' in df.columns else all_names[:2000]
+            df.nlargest(800, 'popularity_score')['name'].tolist()
+            if 'popularity_score' in df.columns else all_names[:800]
         )
 
-    matches = process.extract(last, pool, scorer=fuzz.partial_ratio, limit=n+5)
+    # token_sort_ratio is much cheaper than partial_ratio and works well
+    # for "did you mean" style prefix/word matching on perfume names.
+    matches = process.extract(
+        last, pool, scorer=fuzz.token_sort_ratio, limit=n + 5
+    )
     seen, results = set(), []
     for name, score, _ in matches:
-        if score < 60 or len(name.strip()) < 3:
+        if score < 65 or len(name.strip()) < 3:
             continue
-        if name.lower().strip() == last.lower().strip():
+        if name.lower().strip() == last_lower.strip():
             continue
         if name not in seen:
             seen.add(name)
@@ -444,17 +487,23 @@ def get_flanker_suggestions_cached(query, n=6):
             break
 
     if not results and brand_match:
-        brand_df = df[df['brand'].str.lower().str.contains(brand_match, na=False)]
-        results  = brand_df['name'].tolist()[:4]
+        brand_idxs = BRAND_TO_INDICES.get(brand_match, [])
+        results = df.loc[brand_idxs, 'name'].tolist()[:4]
 
     return results
 
 def get_perfume_image_by_name(name):
-    row = df[df['name'].str.lower() == name.lower()]
-    if len(row) == 0:
+    idx = NAME_TO_IDX.get(name.lower().strip())
+    if idx is None:
         return None
-    img = row.iloc[0].get('image_url')
+    img = df.at[idx, 'image_url']
     return str(img) if pd.notna(img) and str(img) not in ['nan','None',''] else None
+
+def get_perfume_brand_by_name(name):
+    idx = NAME_TO_IDX.get(name.lower().strip())
+    if idx is None:
+        return ''
+    return df.at[idx, 'brand']
 
 @st.cache_data(show_spinner=False)
 def get_category_perfumes(category_keywords, min_matches=2, limit=12):
@@ -959,6 +1008,7 @@ def main():
         perfume_names = None
         notes_input   = None
         dupes_only    = False
+        submitted     = False   # set True by whichever tab's button is clicked
 
         # ── TAB 1: By perfume name ─────────────────────────────────────
         with tab1:
@@ -973,20 +1023,27 @@ def main():
             if 'pf_value' not in st.session_state:
                 st.session_state['pf_value'] = ''
 
-            raw = st.text_input(
-                "pf",
-                value=st.session_state['pf_value'],
-                placeholder="e.g. Dior Sauvage, Chanel Chance",
-                label_visibility="collapsed",
-                key="pf_input"
-            )
+            in_col, btn_col = st.columns([4, 1])
+            with in_col:
+                raw = st.text_input(
+                    "pf",
+                    value=st.session_state['pf_value'],
+                    placeholder="e.g. Dior Sauvage, Chanel Chance",
+                    label_visibility="collapsed",
+                    key="pf_input"
+                )
+            with btn_col:
+                pf_go = st.button("Find my scent", type="primary",
+                                   use_container_width=True, key="go_btn_pf")
+
             # keep session state in sync
             st.session_state['pf_value'] = raw
 
             # suggestions — only show when user is actively typing
             # and has not yet clicked search
             if raw and len(raw.split(',')[-1].strip()) >= 3:
-                sugs = get_flanker_suggestions_cached(raw, 6)
+                with st.spinner("Looking for matches..."):
+                    sugs = get_flanker_suggestions_cached(raw, 6)
                 if sugs:
                     st.markdown(
                         "<p style='color:#333;font-size:0.72rem;"
@@ -1004,10 +1061,7 @@ def main():
                                 'border-radius:6px;display:flex;align-items:center;'
                                 'justify-content:center;color:#333;margin:0 auto;">📷</div>'
                             )
-                            # Get brand for the suggestion
-                            sug_row = df[df['name'].str.lower() == sug.lower()]
-                            sug_brand = sug_row.iloc[0]['brand'] \
-                                        if len(sug_row) > 0 else ''
+                            sug_brand = get_perfume_brand_by_name(sug)
 
                             st.markdown(
                                 f'<div class="suggestion-container">'
@@ -1018,16 +1072,22 @@ def main():
                                 unsafe_allow_html=True
                             )
                             # Clicking the button sets the input value
-                            # AND triggers an immediate search
+                            # AND triggers an immediate search, tagged
+                            # so we know it came from the Perfume tab
                             if st.button("Select", key=f"sug_{i}",
                                          use_container_width=True):
-                                st.session_state['pf_value']       = sug
-                                st.session_state['trigger_search']  = True
+                                st.session_state['pf_value']         = sug
+                                st.session_state['trigger_search']   = True
+                                st.session_state['trigger_source']   = 'perfume'
                                 st.rerun()
 
             if raw and raw.strip():
                 perfume_names = [p.strip() for p in raw.split(',')
                                  if p.strip()]
+
+            if pf_go:
+                submitted  = True
+                dupes_only = False
 
         # ── TAB 2: By notes — no vibe buttons ─────────────────────────
         with tab2:
@@ -1037,14 +1097,24 @@ def main():
                 "mood, or feeling.</p>",
                 unsafe_allow_html=True
             )
-            raw_notes = st.text_input(
-                "nt",
-                placeholder="e.g. warm vanilla oud, fresh citrus office",
-                label_visibility="collapsed",
-                key="nt_input"
-            )
+            in_col, btn_col = st.columns([4, 1])
+            with in_col:
+                raw_notes = st.text_input(
+                    "nt",
+                    placeholder="e.g. warm vanilla oud, fresh citrus office",
+                    label_visibility="collapsed",
+                    key="nt_input"
+                )
+            with btn_col:
+                nt_go = st.button("Find my scent", type="primary",
+                                   use_container_width=True, key="go_btn_nt")
+
             if raw_notes and raw_notes.strip():
                 notes_input = raw_notes.strip()
+
+            if nt_go:
+                submitted  = True
+                dupes_only = False
 
         # ── TAB 3: Find a dupe ─────────────────────────────────────────
         with tab3:
@@ -1054,31 +1124,40 @@ def main():
                 "alternatives that smell 80-99% similar.</p>",
                 unsafe_allow_html=True
             )
-            raw_dupe = st.text_input(
-                "dp",
-                placeholder="e.g. Baccarat Rouge 540, Creed Aventus",
-                label_visibility="collapsed",
-                key="dp_input"
-            )
+            in_col, btn_col = st.columns([4, 1])
+            with in_col:
+                raw_dupe = st.text_input(
+                    "dp",
+                    placeholder="e.g. Baccarat Rouge 540, Creed Aventus",
+                    label_visibility="collapsed",
+                    key="dp_input"
+                )
+            with btn_col:
+                dp_go = st.button("Find my scent", type="primary",
+                                   use_container_width=True, key="go_btn_dp")
+
             if raw_dupe and raw_dupe.strip():
                 perfume_names = [raw_dupe.strip()]
                 dupes_only    = True
 
-        st.markdown("<div style='height:0.5rem'></div>",
-                    unsafe_allow_html=True)
+            if dp_go:
+                submitted = True
+                # perfume_names / dupes_only already set above from raw_dupe
 
-        go = st.button("Find my scent", type="primary",
-                       use_container_width=True, key="go_btn")
-
-        # ── Trigger search from button OR suggestion click ─────────────
-        trigger = go or st.session_state.get('trigger_search', False)
+        # ── Trigger search from a tab button OR a suggestion click ─────
+        trigger = submitted or st.session_state.get('trigger_search', False)
 
         if trigger:
-            # If triggered by suggestion, use the saved value
+            # If triggered by a "Did you mean" suggestion click, resolve
+            # which tab it came from so we don't clobber dupes_only or
+            # search the wrong field.
             if st.session_state.get('trigger_search', False):
-                perfume_names = [st.session_state['pf_value']]
-                dupes_only    = False
+                source = st.session_state.get('trigger_source', 'perfume')
+                if source == 'perfume':
+                    perfume_names = [st.session_state['pf_value']]
+                    dupes_only    = False
                 st.session_state['trigger_search'] = False
+                st.session_state['trigger_source']  = None
 
             if perfume_names or notes_input:
                 run_search(perfume_names, notes_input, n_res, dupes_only, loc)
