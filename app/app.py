@@ -165,18 +165,26 @@ def inject_css():
     div[data-testid="stButton"] > button[kind="primary"] {
         display: block !important;
         width: 100% !important;
-        min-height: 50px !important;
-        font-size: 1rem !important;
-        margin-top: 0.5rem !important;
+        height: 2.5rem !important;
+        min-height: 2.5rem !important;
+        font-size: 0.95rem !important;
+        margin-top: 0 !important;
         background-color: #C9A84C !important;
         color: #0A0A0A !important;
         font-weight: 700 !important;
         border-radius: 8px !important;
     }
+    div[data-testid="stTextInput"] input {
+        height: 2.5rem !important;
+    }
     @media (max-width: 768px) {
         div[data-testid="stButton"] > button[kind="primary"] {
-            font-size: 1.1rem !important;
-            min-height: 56px !important;
+            font-size: 1rem !important;
+            height: 2.75rem !important;
+            min-height: 2.75rem !important;
+        }
+        div[data-testid="stTextInput"] input {
+            height: 2.75rem !important;
         }
     }
     .stTabs [data-baseweb="tab-list"] {
