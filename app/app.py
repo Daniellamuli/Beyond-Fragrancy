@@ -593,12 +593,16 @@ def recommend(perfume_names=None, notes_input=None, n=12, dupes_only=False):
 
     sc  = MinMaxScaler()
     res = res.copy()
-    res['_sn'] = sc.fit_transform(res[['_sim']])
     res['_pn'] = (
         sc.fit_transform(res[['popularity_score']].fillna(0))
         if 'popularity_score' in res.columns else 0
     )
-    res['_score'] = 0.65 * res['_sn'] + 0.35 * res['_pn']
+    # Ranking is driven by true match quality (_sim, raw cosine similarity —
+    # the same number shown on the card as "X% match"). Popularity only
+    # nudges the order slightly so that among very close matches, the
+    # better-known perfume can edge ahead; it can no longer pull a
+    # weaker match above a meaningfully stronger one.
+    res['_score'] = 0.90 * res['_sim'] + 0.10 * res['_pn']
     res['_rf']    = res['rating_avg'].fillna(0)
     res['_rc']    = res['rating_count'].fillna(0)
     res = res.sort_values(['_score','_rf','_rc'], ascending=False)
@@ -1019,15 +1023,19 @@ def main():
                 unsafe_allow_html=True
             )
 
-            # Use session state to persist the input value across reruns
-            if 'pf_value' not in st.session_state:
-                st.session_state['pf_value'] = ''
+            # If a suggestion was just clicked, seed the widget's own
+            # session-state key BEFORE the widget is created. Streamlit
+            # widgets own their value via their `key` once instantiated,
+            # so writing to session_state[key] (not just a separate
+            # tracking variable) is the only reliable way to override
+            # what's displayed/returned on the next run.
+            if st.session_state.get('_apply_pf_value') is not None:
+                st.session_state['pf_input'] = st.session_state.pop('_apply_pf_value')
 
-            in_col, btn_col = st.columns([4, 1])
+            in_col, btn_col = st.columns([4, 1], vertical_alignment="bottom")
             with in_col:
                 raw = st.text_input(
                     "pf",
-                    value=st.session_state['pf_value'],
                     placeholder="e.g. Dior Sauvage, Chanel Chance",
                     label_visibility="collapsed",
                     key="pf_input"
@@ -1035,9 +1043,6 @@ def main():
             with btn_col:
                 pf_go = st.button("Find my scent", type="primary",
                                    use_container_width=True, key="go_btn_pf")
-
-            # keep session state in sync
-            st.session_state['pf_value'] = raw
 
             # suggestions — only show when user is actively typing
             # and has not yet clicked search
@@ -1071,14 +1076,17 @@ def main():
                                 f'</div>',
                                 unsafe_allow_html=True
                             )
-                            # Clicking the button sets the input value
-                            # AND triggers an immediate search, tagged
-                            # so we know it came from the Perfume tab
+                            # Clicking the button stores the chosen name
+                            # to be applied to the widget on rerun, and
+                            # fires the search directly off that name
+                            # (not off whatever's in session_state['pf_value'],
+                            # which could otherwise be stale).
                             if st.button("Select", key=f"sug_{i}",
                                          use_container_width=True):
-                                st.session_state['pf_value']         = sug
+                                st.session_state['_apply_pf_value']  = sug
                                 st.session_state['trigger_search']   = True
                                 st.session_state['trigger_source']   = 'perfume'
+                                st.session_state['trigger_value']    = sug
                                 st.rerun()
 
             if raw and raw.strip():
@@ -1097,7 +1105,7 @@ def main():
                 "mood, or feeling.</p>",
                 unsafe_allow_html=True
             )
-            in_col, btn_col = st.columns([4, 1])
+            in_col, btn_col = st.columns([4, 1], vertical_alignment="bottom")
             with in_col:
                 raw_notes = st.text_input(
                     "nt",
@@ -1124,7 +1132,7 @@ def main():
                 "alternatives that smell 80-99% similar.</p>",
                 unsafe_allow_html=True
             )
-            in_col, btn_col = st.columns([4, 1])
+            in_col, btn_col = st.columns([4, 1], vertical_alignment="bottom")
             with in_col:
                 raw_dupe = st.text_input(
                     "dp",
@@ -1150,14 +1158,18 @@ def main():
         if trigger:
             # If triggered by a "Did you mean" suggestion click, resolve
             # which tab it came from so we don't clobber dupes_only or
-            # search the wrong field.
+            # search the wrong field. Use trigger_value (captured at the
+            # moment the suggestion was clicked) rather than re-reading
+            # the text_input's widget state, which may not have updated
+            # to the new value yet on this rerun.
             if st.session_state.get('trigger_search', False):
                 source = st.session_state.get('trigger_source', 'perfume')
                 if source == 'perfume':
-                    perfume_names = [st.session_state['pf_value']]
+                    perfume_names = [st.session_state.get('trigger_value', '')]
                     dupes_only    = False
                 st.session_state['trigger_search'] = False
                 st.session_state['trigger_source']  = None
+                st.session_state['trigger_value']   = None
 
             if perfume_names or notes_input:
                 run_search(perfume_names, notes_input, n_res, dupes_only, loc)
